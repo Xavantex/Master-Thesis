@@ -260,10 +260,10 @@ The end users, the researchers at Lund want to be able to quickly produce result
 
 Uppsala University have recently started to move away from MATLAB, meaning there are interests in finding out if MATLAB programs in both research and teaching are able to be translated or at least executed in Python.
 Because Python is growing fast in both popularity and in Machine learning with no proprietary license needed, Ericsson are keen to show the advantages with Python over MATLAB to the researchers at Lund University.
-With industry moving more and more toward Python with it's massive support for machine learning and a decline in people knowledgeable in MATLAB, it is easier for Ericsson in the long term to support projects which are written in Python.
+With industry moving more and more toward Python with its massive support for machine learning and a decline in people knowledgeable in MATLAB, it is easier for Ericsson in the long term to support projects which are written in Python.
 The student and Ericsson were interested in the scalability and speedup of using more hardware to tackle the problem, showing the possibility or problems with cloud solutions.
 
-\subsection{Objective with the project}%%Might want to change linear
+\subsection{Objective With the Project}%%Might want to change linear
 
 There were a few main objectives with project as it was fundamentally a project with the endgoal to improve some code and the workflow for scientists at Lund University.
 First objective in the project was an investigation of best-practices and various tools for run-time improval in Python.
@@ -272,7 +272,7 @@ Finally the project wanted to improve the run-time performance of code used in r
 The approaches were to use more hardware in a cloud solution, decreasing sequential run-time with optimizations and using an accelerator to remove unnecessary repeated computations.
 
 
-\subsection{Scope of the project}%report}
+\subsection{Scope of the Project}%report}
 
 It was decided that all old MATLAB code except for the preprocessing parts using fieldtrip would be translated to python.
 The preprocessing only took a few hours and the extra development time necessary to translate it was deemed unecessary. 
@@ -357,7 +357,7 @@ Since \texttt{Do12TestClassifier} processes subjects from \texttt{Do11TrainClass
 
 \section{Theory}
 
-\subsection{Cluster framework}
+\subsection{Cluster Framework}
 
 A cluster computing framework or cluster framework is a framework from which one can set up and schedule computation that are to be distributed and computed over a cloud or cluster of computers.
 A cluster framework here is not to be confused with other things which could be categorized as a cluster framework, in which it is for example a framework of virtualizing a cluster of computers to distribute a set of different services, applications or appear to be the same computer.
@@ -389,7 +389,7 @@ Ray was robust, easy to learn and the fact that Ray had a focus on machine learn
 With Ray being relatively new and having high support for different machine learning libraries to distribute the workload, it seemed both an exciting and good choice in the beginning of the project~\cite{ray:RaySGD, ray:Rayrllib, ray:RayTune, ray:RaySklearn}. 
 
 % write more about dask?
-The data being processed in this project were all relatively small, thus the main advantages with Dask fell off.
+The data processed in this project were all relatively small, thus the main advantages with Dask fell off.
 
 Ray's development team have stated that while they have API (Application Programming Interface) simplicity and reliability as their system design goals, they can give preference to their core system goals, performance and reliability during development~\cite{ray:Architecture}.
 
@@ -398,97 +398,109 @@ Ray's development team have stated that while they have API (Application Program
 %Usage/functionality, finns det någon bättre term?
 \subsubsection{Ray Usage}
 
-The main functions in Ray enable executing Python functions or classes in parallel with Python function decorators, called remote functions or remote actors.
-Defining a set of remote functions or classes packages them to be available and executed on a Ray cluster.
-A Ray cluster is the background server and services run on a computer cluster by which the computers communicate and send instructions to each other.
+The main function in Ray enable executing Python functions or classes in parallel with Python function decorators, called remote functions or remote actors~\cite{ray:remoteFunctions, ray:remoteClasses}.
+Henceforth remote functions and classes will be collectively referred to as remote functions.
+Defining a set of remote functions packages them to be available and executed on a Ray cluster.
+A Ray cluster is the background server and services run on a computer cluster by which the computers communicate and send instructions to each other~\cite{ray:rayCluster}.%Inte bästa citation, se om man kanske kan hitta en bättre source för vad Ray cluster e.
 To compute something with a remote function one calls it as a normal function and appends \texttt{.remote} before the arguments. 
 
-Remote functions and actors returns abstract Ray objects which represents the results from the remote function or actor.
-The abstract Ray objects are returned immediately and executes the functions or actors in the background on available resources in the Ray cluster.
-By returning Ray objects immediately Ray can execute other remote functions or actors in parallel while previous calls are still being computed. 
-The other advantage with abstraction is if further processing or computations with the Ray objects is to be done, it can simply be used as the argument in another remote function.
-Using abstract Ray objects as arguments in other remote functions or actors creates dependencies which Ray takes into account, scheduling them for execution when the 
-With abstract objects used to represent future results, the intermediate results don't have to be returned to the scheduling node but can instead be either computed on the same node or sent to another available node.
+Remote functions returns abstract remote objects which represents the results from the remote functions.
+By returning abstract remote objects, Ray can schedule and execute other remote functions in parallel with previous and future calls to remote functions.
+Execution of a remote function is done in the background asynchronously from the script that called it and other remote function calls, on available hardware resources in the Ray cluster~\cite{ray:remoteFunctions}.
+%Kanske ska ha understående mening och byta ut meningen innan förra
+%Because execution of remote functions is done in the background and instead returns remote object, a script can call more remote functions to be done in parallel.
+The major use of remote objects from remote functions in Ray is that Ray allows remote objects to be used as arguments in other remote functions.
+Using abstract remote objects as arguments in other remote functions or actors creates dependencies which Ray takes into account, scheduling them for execution for when the dependencies are done.
+Remote objects used in remote functions act as if they were the results the remote objects represents.
+With abstract objects used to represent future results, the intermediate results don't have to be returned to the scheduling node but can instead be either computed on the same node or sent to another available node~\cite{ray:remoteObjects}.
 
-To retrieve a result from a remote function, \texttt{.get} retrieves the actual result an abstract Ray object represents.
-The Ray developers themselves recommend to delay retrieving results as much as possible because it blocks subsequent scheduled events and stops possible parallelism~\cite{ray:delayget}.
+To retrieve a result from a remote function, \texttt{.get} retrieves the actual result an abstract remote object represents~\cite{ray:FetchingResults}.
+When \texttt{.get} is called, the script will block any subsequent function calls and wait until the result is ready.
+The Ray developers themselves recommend to delay retrieving results as much as possible because blocking subsequent scheduled remote function calls stops possible parallelism~\cite{ray:delayget}.
 
 Aside from the two main things in Ray, remote functions/actors and \texttt{.get} to retrieve results, there are multiple supported libraries to speed up machine learning or to utilize Dask functionalities plus more~\cite{ray:RaySGD, ray:Rayrllib, ray:RayTune, ray:RaySklearn, ray:DaskOnRay}. 
-It is possible in Ray to declare resource constraints for each remote function such as memory or CPU, or set up a scheduling strategy to make sure it's properly scheduled~\cite{ray:Resources, ray:PlacementGroup}.
+It is possible in Ray to declare resource constraints for each remote function such as memory or CPU, or set up a scheduling strategy to make sure it is properly scheduled~\cite{ray:Resources, ray:PlacementGroup}.
 A schedule strategy in Ray could be to schedule things as locally as possible and only use other machines when absolutely necessary, or vice versa.
 
 \subsection{The Accelerator}
 
 The Accelerator is a data-processing framework which aims to provide fast data access, parallel execution, reproducibility and transparency~\cite{exax:Accelerator}.
 The main advantages in terms of performance is reproducibility, with the Accelerator able to keep track of what source code and dependencies have been used for each execution.
-The Accelerator can use old data from already executed code for which new code rely on.
+The Accelerator can use old data from already executed code for which new code relies on~\cite{exax:sourceCode}.
 Assuming the execution time is evenly distributed and that the code is evenly changed over time, the Accelerator could on average remove up to 50\% of the execution time from start to finish.
-The Accelerator also have parallel execution builtin to utilize all of the local CPUs resources.
+The Accelerator also have parallel execution builtin to utilize all of the local CPUs resources~\cite{exax:parallelExecution}.
 
 By letting the Accelerator keep track of what has been executed and when, maintenance of the code becomes automated.
 Automating code maintenance speeds up development and eliminates human error which could be critical in a scientific or industrial environment.
 
 \subsection{Python}
-\subsubsection{General guidelines for Python optimization and speed}\label{guidelines}
+\subsubsection{General Guidelines for Python Optimization and Speed}
 
-Reading Python Scripting for Computational Science by H.P. Langtangen there are a few clear general best-practice rules for optimal run-time performance~\cite{pythonBook}.
-The rules setup by Langtangen are to be viewed as guidelines since they are not universally true and Python as a programming language is due to change further as it has since it's publication in 2008.
-Langtangen reccomended to always use if statements but profiling of the Python code showed that an if statement was bottlenecking the code, something which further proves the point that the rules by Langtangen are to be viewed as guidelines.
+According to Python Scripting for Computational Science by H.P. Langtangen there are a few clear general best-practice rules for optimal run-time performance~\cite{pythonBook}.
+%The rules setup by Langtangen are to be viewed as guidelines since they are not universally true and Python as a programming language is due to change further since its publication in 2008.
+%Langtangen reccomended to always use if statements but profiling of the Python code showed that an if statement was bottlenecking the code, something which further proves the point that the rules by Langtangen are to be viewed as guidelines.
 While the rules setup by Langtangen are great tips, one must remember that optimizing before profiling or when coding is a trap.
-Thinking about optimizations before even writing some code could degrade the program or prolong the development time, compared to if profiling and optimizations were made after writing the code.
-The best literature for faster Python was found to be the step by step guide in High Performance Python~\cite{oreilly}.
+Thinking about optimizations before even writing some code could degrade the program or prolong the development time, compared to profiling and performing optimization after writing the first version of the code.
+High Performance Python was found in this project to be the better choice compared to Langtangen on how to find slow code and make fast Python code~\cite{oreilly}.
+Langtangen and High Performance Python focus on different things however, so it is not a fair comparison.
+Langtangen is targeted towards people who when it was published might be considering switching to Python and what they should think about when programming.
+High Performance Python is explaining a framework to follow for faster Python code, what parts are most crucial and when to move on with other tools to make Python faster.
+It is important to note that while High Performance Python had a greater impact on the speed of the code in this project, Langtangen was also of great importance to the optimizations made.
+
 
 The useful rules used by Langtangen in this project are listed in the following paragraphs.
-
-Rule 1, avoid explicit loops, use vectorized NumPy expressions instead.
-There are several things to the rule, if it is possible and the memory is available a vectorized NumPy operation can see a speedup factor of 10+ as Langtangen describes it~\cite{NumpyArray}.
-While the majority of the time it's not a question of memory this is still a factor as NumPy will often use more memory than an explicit loop, which could lead to a slowdown rather than speedup~\cite{NumpyVectorization}.
-The speedup from vectorization in NumPy comes from it using precompiled code in C to do the computations, avoiding the overhead from Python.
-The problem of explicit loops being slow in Python stems from the fact that Python is an interpreted language.
-In a compiled language an interpreter doesn't have to interpret each line of code for every iteration of an explicit loop, meaning that there is a significant speedup compared to Python due to interpreting the code.
-A compiler can use other techniques such as loop unrolling to avoid unnecessary instructions or load times~\cite{wiki:LoopUnroll}.
-A compiler is able to notice patterns in loops to better optimize the code structure for the hardware, without changing the final results.
-
-Rule 2, avoid module prefix in frequently called functions.
-The difference in how imports are made is that there are two different namespaces used depending on how an import is made and this is illustrated in High Performance Python.
-Importing functions using the from keyword sets the function in the global namespace, making accesses relatively fast.
-Importing a whole module in Python with only the import keyword makes any subsequent functions calls do 2 dictionary lookups, one for the module and one for the function~\cite{oreillyCh4}.
-In theory there shouldn't be a difference between the two methods of importing if only calling the function once.
-Even though explicit use of functions are fast there is a caveat as in most things, there seems to be a greater overhead when only doing one function call from a module if importing the function explicitly rather than importing the whole module and then calling the module function.
-
-%Rule 3, plain functions are called faster than class methods.
-
-Rule 4, Inlining functions speeds up the code.
-Function calls in general introduce overhead as each time a function is called it has to be looked up in the namespace before executing the code.
-From a performance point of view it is therefor recommended to just inline small functions, however functions maintain readability and shouldn't be disregarded for small perfomance gains. 
-
-%Rule 5, Avoid using NumPy functions with scalar arguments.
-
-%Rule 6, use xrange instead of range.
-
-Rule 7, if-else is faster than try-except.
-While it is generally always recommended to use if-else over try/except there are exceptions to this rule, profiling showed that a specific if-else in this project was taking 10\% of the execution time.
-It was revealed that the reason behind the 10\% overhead from the if statement was due to it's condition using the .any function in NumPy, for a NumPy array.
-So it wasn't the if-else statement itself but rather the .any function determining if the condition was true or false.
-The .any function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
-Again generally if statements are recommended but profiling showed that due to the long execution time of the .any function it was both unnecessary and degrading performance.
-
-%Rule 8, avoid resizing NumPy arrays.
-%Rule 9, let eval and exec work on compiled code.
-%Rule 10, callbacks to Python from fortran and C/C++ are expensive.
-%Rule 11, avoid unecessary allocation of large data structures.
-%Rule 12, be careful with type matching in mixed Python-F77 software.
-%Rule 13, F2PY may introduce time-consuming copying of arrays.
-%Rule 14, Calling C++ classes via SWIG involves proxy classes.
-%Rule 15, wrap2callable may be expensive.
-
 Not all the rules from Langtangen have been listed in \ref{guidelines}, the few listed were found to be relevant in optimizations after profiling and made the code remarkably faster.
+\begin{itemize}\label{guidelines}
+    \item \textbf{Rule 1}, avoid explicit loops, use vectorized NumPy expressions instead.
+    There are several things to the rule, if it is possible and the memory is available a vectorized NumPy operation can see a speedup factor of 10+ as Langtangen describes it~\cite{NumpyArray}.
+    While the majority of the time it is not a question of memory this is still a factor as NumPy will often use more memory than an explicit loop, which could lead to a slowdown rather than speedup~\cite{NumpyVectorization}.
+    The speedup from vectorization in NumPy comes from it using precompiled code in C to do the computations, avoiding the overhead from Python.
+    The problem of explicit loops being slow in Python stems from the fact that Python is an interpreted language.
+    In a compiled language an interpreter doesn't have to interpret each line of code for every iteration of an explicit loop, meaning that there is a significant speedup compared to Python due to interpreting the code.
+    A compiler can use other techniques such as loop unrolling to avoid unnecessary instructions or load times~\cite{wiki:LoopUnroll}.
+    A compiler is able to notice patterns in loops to better optimize the code structure for the hardware, without changing the final results.
+
+    \item \textbf{Rule 2}, avoid module prefix in frequently called functions.
+    The difference in how imports are made is that there are two different namespaces used depending on how an import is made and this is illustrated in High Performance Python.
+    Importing functions using the from keyword sets the function in the global namespace, making accesses relatively fast.
+    Importing a whole module in Python with only the import keyword makes any subsequent functions calls do 2 dictionary lookups, one for the module and one for the function~\cite{oreillyCh4}.
+    In theory there shouldn't be a difference between the two methods of importing if only calling the function once.
+    Even though explicit use of functions are fast there is a caveat as in most things, there seems to be a greater overhead when only doing one function call from a module if importing the function explicitly rather than importing the whole module and then calling the module function.
+
+%   \item Rule 3, plain functions are called faster than class methods.
+
+    \item \textbf{Rule 4}, Inlining functions speeds up the code.
+    Function calls in general introduce overhead as each time a function is called it has to be looked up in the namespace before executing the code.
+    From a performance point of view it is therefor recommended to just inline small functions, however functions maintain readability and shouldn't be disregarded for small perfomance gains. 
+
+%   \item \textbf{Rule 5}, Avoid using NumPy functions with scalar arguments.
+
+%   \item \textbf{Rule 6}, use xrange instead of range.
+
+    \item \textbf{Rule 7}, if-else is faster than try-except.
+    While it is generally always recommended to use if-else over try/except there are exceptions to this rule, profiling showed that a specific if-else in this project was taking 10\% of the execution time.
+    It was revealed that the reason behind the 10\% overhead from the if statement was due to its condition using the .any function in NumPy, for a NumPy array.
+    So it wasn't the if-else statement itself but rather the .any function determining if the condition was true or false.
+    The .any function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
+    Again generally if statements are recommended but profiling showed that due to the long execution time of the .any function it was both unnecessary and degrading performance.
+
+%   \item \textbf{Rule 8}, avoid resizing NumPy arrays.
+%   \item \textbf{Rule 9}, let eval and exec work on compiled code.
+%   \item \textbf{Rule 10}, callbacks to Python from fortran and C/C++ are expensive.
+%   \item \textbf{Rule 11}, avoid unecessary allocation of large data structures.
+%   \item \textbf{Rule 12}, be careful with type matching in mixed Python-F77 software.
+%   \item \textbf{Rule 13}, F2PY may introduce time-consuming copying of arrays.
+%   \item \textbf{Rule 14}, Calling C++ classes via SWIG involves proxy classes.
+%   \item \textbf{Rule 15}, wrap2callable may be expensive.
+
+\end{itemize}
+
 The list shown in Python Scripting for Computational Science~\cite{pythonBook} are good guidelines, but profiling is to be seen as the first and foremost tool to use and interpret when optimizing Python or any high-level language code for that matter.
 The whole book of High Performance Python can be seen as a long step by step guide on how to best optimize and improve performance of code in Python, explaining in detail why each step is performed. 
 The first steps in High Performance Python go into great detail about profiling and repeat throughout the book that one must continuously profile and interpret the results before anything else, both execution and memory usage.
 While there exist many different tools such as compiling and clusters to improve performance in Python, it is important that one has exhausted the previously listed options in High Performance Python first as they are usually what is gonna degrade performance~\cite{oreillyCh10}.
 
-\subsubsection{Profiling and code optimizations in SW engineering}
+\subsubsection{Profiling and Code Optimizations in SW Engineering}
 Profiling in Python was made with the cProfile library,
 it is a standard library in Python and the recommended library to use by Python~\cite{cProfile}.
 cProfile is a library made in C for collecting statistics during runtime with a focus on minimizing the overhead.
@@ -525,7 +537,7 @@ Even if a smaller amount of data takes less time on the bus, one must still cons
 
 Not only CPUs have become increasingly better, a lot of work has been done with storage devices as well.
 Modern hardware have tried to move disk closer and closer to the CPU with various means, such as using caches within the disk to be able to use a faster data bus for example.
-Even if storage devices have improved it's worth noting that CPUs have improved much faster and will in general always be faster than any other part in a machine.
+Even if storage devices have improved it is worth noting that CPUs have improved much faster and will in general always be faster than any other part in a machine.
 With the CPU being extremely faster than disk it is sometimes worth investigating things such as data compression for a better runtime performance.
 
 The implementation of Apache arrow's save format was however left as an in depth problem due to the time saving files becoming negligible after using pickle.
@@ -570,7 +582,7 @@ While most of the thins mentioned might be micro-optimizations and often not mea
 Profiling revealed that \texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time linearly searching for indices in a list, something a novice or a not so experienced programmer might think about.
 Linear searches are a famous performance killer due to their fast growth and the solution was adding a few more lines, but the changes made the equivalent part of the code negligible.
 Because the linear search was simply looking for indices of a range of specific elements the linear search could be removed by mapping the indices to a hashmap or dictionary in Python, with the elements as the keys.
-With each index mapped to it's element as the key, each lookup became fast and constant.
+With each index mapped to its element as the key, each lookup became fast and constant.
 Using a hashmap removed 81\% for \texttt{Do13TestClassifier\_ShuffledLabels} compared to the original execution time using the linear search.
 
 Most other larger improvements were made by finding equivalent NumPy functions used in the code, to bring down the level where it was computed.
@@ -592,7 +604,7 @@ Ray does support Cython code to speed up computation so it would have been inter
 
 %\subsection{Algorithm, memory approaches}
 %Wasnt really a question of optimizing any algorithm
-\subsection{Conversion between languages}
+\subsection{Conversion Between Languages}
 
 Conversion from MATLAB to Python have shown to be almost entirely supported by the immense amount of modules for Python.
 The majority of solutions used in science which are available in MATLAB are already supported by the module NumPy and most machine learning is supported with scikit-learn in some form.
@@ -607,9 +619,9 @@ A reason why you don't usually translate code and instead redo the whole program
 Seemingly identical libraries are implemented differently, in different languages for a vast array of reasons, from different developer teams to how the languages themselves work.
 
 
-\subsection{Code parallelization}
+\subsection{Code Parallelization}
 The code was massively parallelizable, with multiple layers being able to be computed in parallel.
-Even if a problem is parallelizable it's not always the best course of action to use a cluster if there are no reasons to do so.
+Even if a problem is parallelizable it is not always the best course of action to use a cluster if there are no reasons to do so.
 The execution time of having to distribute a problem to the entire cluster has to outweigh the original execution time.
 Because the CPU is extremely fast the communication overhead from distributing work to other cores often makes a program slower than running everything on the same CPU.
 There's even a small communication overhead in parallelizing problems on the same CPU, it is however not usually something one has to consider.
@@ -623,7 +635,7 @@ The framework called Ray was used to parallize the code.
 With Ray's abstraction of objects and no real dependency between large blocks in the code, a large advantage with Ray emerged as \texttt{.get} could in practice be delayed until the end.
 With no need to retrieve intermediate results the full potential of Ray emerged, filling all cores in the cluster with work for the duration of the scripts.
 When delaying the get function the Ray scheduler can schedule things as computer resources are freed up and required data is available.
-Ray doesn't need to return unnecessary intermediate data, instead it returns a Ray object, a promise of a future which Ray can use as if it was the object itself when sending to another remote function.
+Ray doesn't need to return unnecessary intermediate data, instead it returns a remote object, a promise of a future which Ray can use as if it was the object itself when sending to another remote function.
 Ray's abstraction of objects creates a more distributed execution of the code and utilizes all of the available hardware.
 
 After the first layer of parallelization for the independent subjects was implemented, further work on parallelizing the partitioned datasets proved more problematic.
@@ -631,14 +643,14 @@ While Ray excels at large parallelization there still exists problems with nesti
 The biggest problem with Ray was when a remote function called the \texttt{.get} function it signalled the Ray scheduler that it was no longer using hardware resources, potentially scheduling more functions than there were hardware or memory.
 The known problem with nested functions led to a small redesign from the original code after a long time of experimental implementations. 
 Ultimately it was possible to avoid the larger issues with multiple layers of parallelization, instead of nesting the remote calls they were made shallow so only a single layer of remote calls were made.
-By having a single layer of remote calls the nesting problem was removed and flipped on it's head, instead scheduling the smallest part of parallelization without doing any slow work on the main thread. 
+By having a single layer of remote calls the nesting problem was removed and flipped on its head, instead scheduling the smallest part of parallelization without doing any slow work on the main thread. 
 Even if there are ways of avoiding nesting remote calls, the unnecessary workarounds could lead to degradation and hopefully the Ray developer team fixes this feature. 
 In the end a fast and working solution was implemented without any noticeable difference in the end results.
 
 
-\subsection{Inherent parallelization}
+\subsection{Inherent Parallelization}
 
-After implementing the accelerator distributing the problem locally on one machine using all it's threads, it was found using Linux's top command that the seperate threads were trying to use more than the assigned thread.
+After implementing the accelerator distributing the problem locally on one machine using all its threads, it was found using Linux's top command that the seperate threads were trying to use more than the assigned thread.
 After researching the problem it was found that NumPy was the culprit.
 Even though Numpy itself is not multithreaded, it is built on top of precompiled BLAS (Basic Linear Algebra Subprograms) libraries and don't control how the BLAS libraries use the hardware available.
 Most BLAS libraries are compiled to utilize as many cores as possible as most operations are extremely parallelizable, however it does not take into account the rare case in which someone actually wants to manually parallelize a problem. 
@@ -654,7 +666,7 @@ The problem was not found to exist in Ray and the reason is because the Ray deve
 The same fix used in Ray to instruct the BLAS libraries to use one thread was applied to the Accelerator.
 The Ray fix was not implemented for the Single thread implementations as MATLAB also utilized multithreading for some linear algebra operations. 
 
-\subsection{Error estimation and computations}
+\subsection{Error Estimation and Computations}
 
 The speedup factor when scaling up from 1 machine in Ray was calculated by dividing the execution time of using 1 machine in Ray with the execution time of using n number of machines, where n is between 1 and 25 machines.
 The speedup equation can be seen in equation \eqref{speedupFac}, $f_{speedup}$ is the relative speedup compared to using 1 machine, $t_1$ is the mean execution time of using 1 machine in Ray and $t_n$ is the mean execution time of using n machines.
@@ -690,7 +702,7 @@ Since all of the main scripts were mostly written using the native eval function
 The removal of the eval functions increased readability, and made later translation to Python easier. With no eval operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
 Removing eval also allowed for basic parallelization in MATLAB, using the parfor function from the Parallel Computing Toolbox in MATLAB.
 Removing eval and implementing the parfor in MATLAB immediately showed a drastic speed up. 
-eval makes any potential compilation impossible since it's not explicit can utilize dynamice variables for example.
+eval makes any potential compilation impossible since it is not explicit can utilize dynamice variables for example.
 
 The largest overhead after after implementing parfor was the loading of large data. 
 MATLAB was able to avoid the large time penalty of loading from disk with most of the major scripts.
@@ -702,11 +714,11 @@ A fast way to further optimize the MATLAB could be to create checkpoints to only
 In the end however the focus of the project was not to optimize the MATLAB code but rather the Python implementation.
 
 
-\subsection{MATLAB to Python translation}
+\subsection{MATLAB to Python Translation}
 
 The execution time of the preprocessing scripts were significantly less than the training of the classifiers and generation of data. 
 The necessary literature and theory behind understanding the preprocessing scripts in order to fully translate those scripts was deemed not to be of focus for this project.
-FieldTrip, the preprocessing library used in MATLAB, and MNE it's equivalent in Python are not implemented and does not process data the same way and would need to be understood in-depth to be able to translate the preprocessing scripts.
+FieldTrip, the preprocessing library used in MATLAB, and MNE its equivalent in Python are not implemented and does not process data the same way and would need to be understood in-depth to be able to translate the preprocessing scripts.
 Because of the low execution time and lack of knowledge it was decided the preprocessing scripts were not to be translated to Python.
 
 Apart from the preprocessing scripts the MATLAB code was first translated line by line to Python, as close to the original code in MATLAB as possible.
@@ -716,7 +728,7 @@ The majority of things were a matter of reading documentation between the equiva
 Implementing an identical training for Python's SVM proved difficult.
 Because MATLAB doesn't explicitly show how they implement SVM, it is hard to tell what the differences were between MATLABs implementation of SVM and Python's.
 While a part of the number of settings were the same for MATLAB and Python's implementation of SVM, it seems that the difference lies with how the respective error functions are written.
-Python's scikit-learn package does allow someone to write their own error function, however MATLAB's documentation is not clear on exactly how it's default settings actually calculate their error. %This might be more of constraints issue, from BoxConstraint Try and elaborate on the ERROR, find sources
+Python's scikit-learn package does allow someone to write their own error function, however MATLAB's documentation is not clear on exactly how its default settings actually calculate their error. %This might be more of constraints issue, from BoxConstraint Try and elaborate on the ERROR, find sources
 
 After implementing a working SVM in the Python code a profile was made of the code using the cProfile module.
 After profiling the Python code with the cProfile module, it was found to be three times slower than the MATLAB counterpart.
@@ -732,7 +744,7 @@ NumPy's any function was able to be cut out using try and except statements, ski
 For loops in Python are usually very slow because each iteration is reinterpreted since Python doesn't compile the code.
 Something that is avoidable using for example map, filter, reduce or list comprehensions. 
 For all these functions the expressions are interpreted once and then computed for the whole loop, saving several iterations of interpretations for the same code. 
-While there are tips for what and when to use there is nothing which is universally true when it comes to Python as there are many things which interact with eachother, Python's founder seems to favor list comprehensions himself but have also showed that it's not always the fastest.
+While there are tips for what and when to use there is nothing which is universally true when it comes to Python as there are many things which interact with eachother, Python's founder seems to favor list comprehensions himself but have also showed that it is not always the fastest.
 In the end when it comes to Python one must follow profiling to see what is fastest for everything.
 Map is a native function in Python that takes a function and an iterable as arguments and compiles a list of the outputs from the function using the items in the iterable.
 
@@ -742,7 +754,7 @@ in1d was removed and replaced with a hashmap which used each sensor name as the 
 The execution time previously dominated by in1d in \texttt{Do13TestClassifier\_ShuffledLabels} with 81\%, saw the equivalent part vanish when using a hashmap.
 
 
-\subsection{Transition to parallel code}
+\subsection{Transition to Parallel Code}
 After translation of the original MATLAB code the Python code was
 rewritten into a single script.
 With the transition into a single script, intermediate loading of files saved from previous scripts could be removed which in turn decreased the execution time a small bit.
@@ -772,7 +784,7 @@ Parallelizable programs are usually only parallel to the extent in which there a
 Because nothing can be made parallel infinitely it must be noted that smallest component which can be executed in parallel in the scripts could be a factor for the 15 minute limit.
 
 
-\subsection{profiling and measuring}
+\subsection{Profiling and Measuring}
 
 The final results were generated on 4 VCPUs @ \unit[2.6]{GHz} and \unit[8]{GB} memory computing nodes in Ericsson's cloud, with the exceptions of two of the single thread tests.
 A comparative single thread test between MATLAB and Python was executed on my personal PC with 8 @ \unit[3.40]{GHz} logical cores and \unit[36]{GB} memory, due to memory and license limitations. 
@@ -878,7 +890,7 @@ Both Python and MATLAB support compilation to speed up code, Python does however
 
 When it comes to an interpreted language the main issue with speed is that it has to interpret the code at runtime, so it has to read, translate to machine code and execute.
 Ignoring the extra overhead from interpreting a program at runtime, compilers also often optimizes things the developer either doesn't know could be optimized or more often is too lazy to optimize manually.
-Compilers can often put the CPU to work in areas of the code where it's idle, it can use caching without explicit use for faster access and performance, reorganize load operations to avoid waiting for the harddrive etc. 
+Compilers can often put the CPU to work in areas of the code where it is idle, it can use caching without explicit use for faster access and performance, reorganize load operations to avoid waiting for the harddrive etc. 
 While Python does have many different compilers, the amount of modules in Python are massive and the main problem is that compilers might not support them all.
 MATLAB as a proprietary product have an advantage over Python in compiling code as it owns most libraries itself.
 It is enormously easier for a development team to maintain and develop a compiler for all libraries in a language if the team develop most libraries itself. 
@@ -929,7 +941,7 @@ While not all code exhibit potential parallelism, it can decrease the execution 
 
 The code could probably see further speedup with a more in-depth analysis of the optimal way to execute it in Ray and by compiling the code.
 
-%Communication overhead? Could be very real since it's probably too divided now
+%Communication overhead? Could be very real since it is probably too divided now
 %Unecessary filtration of features with zscore? or faster filtration
 %Potential bottleneck in not delaying \texttt{.get} everywhere
 %Can it be made faster with more manual spread?
@@ -939,7 +951,7 @@ The code could probably see further speedup with a more in-depth analysis of the
 \section{Outlook}
 
 There are still thing which could be improved, I suspect that at the moment a big reason for the 15 minute hard limit for the Ray implementation might be due to the high scalability of the current code.
-The very smallest parallel code block is surprisingly fast to execute and the need to distribute them faster and faster might be what's limiting Ray in utilizing the given hardware to it's full potential, bottlenecking in the scheduling.
+The very smallest parallel code block is surprisingly fast to execute and the need to distribute them faster and faster might be what's limiting Ray in utilizing the given hardware to its full potential, bottlenecking in the scheduling.
 
 A suggestion would be to try and divide the code into larger chunks, so that the process takes longer and Ray doesn't need to schedule as many processes.
 Profiling of the optimal division of chunks would have to be made to see what runs fastest overall, or an in-depth analysis of the optimal number of chunks for the given number of threads.
