@@ -25,7 +25,8 @@
 \usepackage{lmodern}
 \usepackage{amsmath}
 \usepackage{xcolor}
-\usepackage{units}
+\usepackage[binary-units=true]{siunitx}
+\sisetup{load-configurations = abbreviations}
 
 %\setlength\parindent{24pt}
 
@@ -155,7 +156,7 @@
         
         \vspace{0.5cm}
 
-        Degree Project in Engineering Physics, \unit[30.0]{c}
+        Degree Project in Engineering Physics, \SI{30.0}{c}
  
         \vspace{0.8cm}
  
@@ -453,7 +454,8 @@ Not all the rules from Langtangen have been listed in \ref{guidelines}, the few 
 \begin{itemize}\label{guidelines}
     \item \textbf{Rule 1}, avoid explicit loops, use vectorized NumPy expressions instead.
     There are several things to the rule, if it is possible and the memory is available a vectorized NumPy operation can see a speedup factor of 10+ as Langtangen describes it~\cite{NumpyArray}.
-    While the majority of the time it is not a question of memory this is still a factor as NumPy will often use more memory than an explicit loop, which could lead to a slowdown rather than speedup~\cite{NumpyVectorization}.
+    Because NumPy will often use more memory than an explicit loop, it could lead to a slowdown rather than a speedup in cases where there isn't enough memory for example~\cite{NumpyVectorization}.
+    In the end it all depends on the circumstances, often the extra memory use in a vectorized solution is negligible compared to alternatives but only profiling can provide a definitive answer.
     The speedup from vectorization in NumPy comes from it using precompiled code in C to do the computations, avoiding the overhead from Python.
     The problem of explicit loops being slow in Python stems from the fact that Python is an interpreted language.
     In a compiled language an interpreter doesn't have to interpret each line of code for every iteration of an explicit loop, meaning that there is a significant speedup compared to Python due to interpreting the code.
@@ -461,28 +463,34 @@ Not all the rules from Langtangen have been listed in \ref{guidelines}, the few 
     A compiler is able to notice patterns in loops to better optimize the code structure for the hardware, without changing the final results.
 
     \item \textbf{Rule 2}, avoid module prefix in frequently called functions.
+    There are two main ways of importing code from other modules/libraries in Python, importing a whole module with \texttt{import moduleName} or importing specific functions from the module with \texttt{from moduleName import functionName}.
+    Importing a whole module would require any calls to the functions within the module to be prefixed with its name (module prefix), for example when constructing an array object in NumPy it would be \texttt{numpy.array}.
+    Importing specific functions from a module would omit the module name prefix, thus creating a numpy array would simply be \texttt{array}.
     The difference in how imports are made is that there are two different namespaces used depending on how an import is made and this is illustrated in High Performance Python.
     Importing functions using the from keyword sets the function in the global namespace, making accesses relatively fast.
-    Importing a whole module in Python with only the import keyword makes any subsequent functions calls do 2 dictionary lookups, one for the module and one for the function~\cite{oreillyCh4}.
+    Importing a whole module in Python with only the import keyword makes any subsequent functions calls do two dictionary lookups, one for the module and one for the function~\cite{oreillyCh4}.
     In theory there shouldn't be a difference between the two methods of importing if only calling the function once.
-    Even though explicit use of functions are fast there is a caveat as in most things, there seems to be a greater overhead when only doing one function call from a module if importing the function explicitly rather than importing the whole module and then calling the module function.
+    Even though explicit use of functions are fast, there seems to be a greater overhead when only doing one function call from a module if importing the function explicitly rather than importing the whole module and then calling the module function.
+    %kolla om man ska ha med följande mening, kan vara värt att nämna att det inte var min idé att testa ursprungligen
+    %The idea of importing a whole module for functions which are only called once were found in post on \url{https://stackoverflow.com} but couldn't be found for citation.
+    The speed difference between explicit imports of functions and the whole module when executing a function once can easily be made with the timeit module, using for example \texttt{python3 -m timeit -v 'from numpy import array; a = array([0])'} (\SI{1.4}{\micro\second} per loop for 200 000 loops) and \texttt{python3 -m timeit -v 'import numpy; a = numpy.array([0])'} (\SI{986}{\nano\second} per loop for 200 000 loops).
 
 %   \item Rule 3, plain functions are called faster than class methods.
-
-    \item \textbf{Rule 4}, Inlining functions speeds up the code.
+    \newpage
+    \item \textbf{Rule 4}, inlining functions speeds up the code.
     Function calls in general introduce overhead as each time a function is called it has to be looked up in the namespace before executing the code.
-    From a performance point of view it is therefor recommended to just inline small functions, however functions maintain readability and shouldn't be disregarded for small perfomance gains. 
+    From a performance point of view it is therefore recommended to just inline small functions, however functions maintain readability and shouldn't be disregarded for small perfomance gains. 
 
 %   \item \textbf{Rule 5}, Avoid using NumPy functions with scalar arguments.
 
 %   \item \textbf{Rule 6}, use xrange instead of range.
 
-    \item \textbf{Rule 7}, if-else is faster than try-except.
+    \item \textbf{Rule 7}, \texttt{if-else} is faster than try-except.
     While it is generally always recommended to use if-else over try/except there are exceptions to this rule, profiling showed that a specific if-else in this project was taking 10\% of the execution time.
-    It was revealed that the reason behind the 10\% overhead from the if statement was due to its condition using the .any function in NumPy, for a NumPy array.
-    So it wasn't the if-else statement itself but rather the .any function determining if the condition was true or false.
-    The .any function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
-    Again generally if statements are recommended but profiling showed that due to the long execution time of the .any function it was both unnecessary and degrading performance.
+    It was revealed that the reason behind the 10\% overhead from the if statement was due to its condition using the \texttt{.any} function in NumPy, for a NumPy array.
+    So it wasn't the if-else statement itself but rather the \texttt{.any} function determining if the condition was true or false.
+    The \texttt{.any} function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
+    Again generally if statements are recommended but profiling showed that due to the long execution time of the \texttt{.any} function it was both unnecessary and degrading performance.
 
 %   \item \textbf{Rule 8}, avoid resizing NumPy arrays.
 %   \item \textbf{Rule 9}, let eval and exec work on compiled code.
@@ -561,8 +569,8 @@ A function which was found to be unecessary was an if condition checking that al
 Checking if an array is empty is slow both in Python and MATLAB as it has to iterate through every index or check if it exists.
 Even if an if statement was shown to be at fault here, it is exceedingly rare and is to be viewed as the exception.
 try/except is slower than if statements and raises the problem of having to deal with exceptions which are expected but might be raised where they are unexpected.
-Exceptions are slow and expensive therefor it is imperative to be careful if one uses try/except instead of an if statement.
-The extra overhead from exceptions can degrade perfomance more than just using an if statement it is therefor important that the majority of the time there aren't any exceptions or that the alternative is exceedingly slow.
+Exceptions are slow and expensive therefore it is imperative to be careful if one uses try/except instead of an if statement.
+The extra overhead from exceptions can degrade perfomance more than just using an if statement it is therefore important that the majority of the time there aren't any exceptions or that the alternative is exceedingly slow.
 It is in general advised to use if statements since boolean expressions are usually fast operations.
 
 After replacing the if statement with try/except keywords, the execution time compared to before when profiling was 10\% less.
@@ -579,7 +587,7 @@ It is debated if people should even think about lookups since there are usually 
 Just as there are problems in how imports of modules are made, the same problem of multiple lookups arises for nested Python objects which makes seperate lookups for each layer of a nested object.
 A way to avoid multiple unecessary lookups for nested objects in loops is to save each layer as a temporary variable to reference.
 While most of the thins mentioned might be micro-optimizations and often not meaningful by themselves they do add up, however the most critical optimization in the project was due to lookups.
-Profiling revealed that \texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time linearly searching for indices in a list, something a novice or a not so experienced programmer might think about.
+Profiling revealed that \\\texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time linearly searching for indices in a list, something a novice or a not so experienced programmer might think about.
 Linear searches are a famous performance killer due to their fast growth and the solution was adding a few more lines, but the changes made the equivalent part of the code negligible.
 Because the linear search was simply looking for indices of a range of specific elements the linear search could be removed by mapping the indices to a hashmap or dictionary in Python, with the elements as the keys.
 With each index mapped to its element as the key, each lookup became fast and constant.
@@ -786,13 +794,13 @@ Because nothing can be made parallel infinitely it must be noted that smallest c
 
 \subsection{Profiling and Measuring}
 
-The final results were generated on 4 VCPUs @ \unit[2.6]{GHz} and \unit[8]{GB} memory computing nodes in Ericsson's cloud, with the exceptions of two of the single thread tests.
-A comparative single thread test between MATLAB and Python was executed on my personal PC with 8 @ \unit[3.40]{GHz} logical cores and \unit[36]{GB} memory, due to memory and license limitations. 
+The final results were generated on 4 VCPUs @ \SI{2.6}{\giga\hertz} and \SI{8}{\giga\byte} memory computing nodes in Ericsson's cloud, with the exceptions of two of the single thread tests.
+A comparative single thread test between MATLAB and Python was executed on my personal PC with 8 @ \SI{3.40}{\giga\hertz} logical cores and \SI{36}{\giga\byte} memory, due to memory and license limitations. 
 A single thread test for Python was executed on one of the computing nodes to show they were in the same order of magnitude as the test on my personal PC, and for a fair comparison between MATLAB and Python.
 
 All execution times for Python were extracted using cProfile, the execution times for MATLAB were extracted using the builtin Profiler.
 An exact timing and profiling for each script in Ray was not possible to achieve as the Ray implementation integrated the scripts, making it possible for Ray to compute parts of later scripts as soon as parts of the previous scripts finish.
-Because the scripts were integrated and due to how Ray handles scheduling there is no definitive boundary between the scripts and therefor it is only possible to specify the total execution time.
+Because the scripts were integrated and due to how Ray handles scheduling there is no definitive boundary between the scripts and therefore it is only possible to specify the total execution time.
 
 After realizing that the first 20 VCPUs originally assigned and used in this project still scaled well, another 80 VCPUs for a total of 100 VCPUs were used. With the 100 VCPUs a more defined curve of the speedup could be generated to find out how scalable the current Ray implementation is.
 
@@ -808,7 +816,7 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     \centering
     \begin{tabular}{|l|l|l|}
     \hline
-    \#                 & \unit[Total]{(min)}        & \unit[Speedup]{(AU)}       \\ \hline
+    \#                 & \SI[parse-numbers=false]{Total}{(\minute)}        & \SI[parse-numbers=false]{Speedup}{(AU)}       \\ \hline
     1 Thread (MAT, PC) & 3426.85$\pm$550.14 & 1.0$\pm$0.23     \\ \hline
     1 Thread (Py, PC)  & 283.63$\pm$1.51    & 12.08$\pm$1.94   \\ \hline
     1 Thread (Py)      & 809.62$\pm$188.22  & 4.23$\pm$1.20    \\ \hline
@@ -834,7 +842,7 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
 \centering
     \begin{tabular}{|l|l|l|l|}
     \hline
-    \unit[\#]{(min)}    & Do11             & Do12           & Do13               \\ \hline
+    \SI[parse-numbers=false]{\#}{(\minute)}    & Do11             & Do12           & Do13               \\ \hline
     1 Thread (MAT, PC) & 410.56$\pm$12.24 & 29.51$\pm$3.39 & 2986.77$\pm$549.99 \\ \hline
     1 Thread (Py, PC)  & 172.29$\pm$1.24  & 1.35$\pm$0.33  & 109.98$\pm$0.80    \\ \hline
     1 Thread (Py)      & 302.17$\pm$45.64 & 4.53$\pm$0.78  & 502.92$\pm$182.60  \\ \hline
