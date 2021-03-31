@@ -127,6 +127,12 @@
     description = {A cluster computing framework is a framework for doing computations on multiple computers often connected through LAN or other ethernet interfaces}
 }
 
+\newglossaryentry{SIMD}
+{
+    name = SIMD,
+    description = {Single Instruction, Multiple Data or SIMD for short is performing the same operation on multiple data points\cite{enwiki:MISD}}
+}
+
 \title{}
 \author{Lowe Erickson }
 \date{May 2018}
@@ -324,7 +330,7 @@ The encoding data was divided in the preprocessing into Amp and NonAmp parts for
     \begin{itemize}
         \item \texttt{permutate} - permutes the test data, shuffling the classes of the data randomly to create new data which retain important statistical properties while having a 33\% of being the correct class.
         
-        \item \texttt{mvpa\_applycrossvalclassifier} - predicts the classes of the permutations from \texttt{permutate} with the models from \texttt{mvpa\_traincrossvalclassifier} and stores the results as confusion matrices.
+        \item \texttt{mvpa\_applycrossvalclassifier} - predicts the classes of the permutations from \texttt{permutate} with the models from \\\texttt{mvpa\_traincrossvalclassifier} and stores the results as confusion matrices.
         
         \item \texttt{ttest} - tests the correct prediction rate of all permutations vs random chance in a ttest with a 33\% mean.
     \end{itemize}
@@ -486,11 +492,12 @@ Not all the rules from Langtangen have been listed in \ref{guidelines}, the few 
 %   \item \textbf{Rule 6}, use xrange instead of range.
 
     \item \textbf{Rule 7}, \texttt{if-else} is faster than try-except.
-    While it is generally always recommended to use if-else over try/except there are exceptions to this rule, profiling showed that a specific if-else in this project was taking 10\% of the execution time.
-    It was revealed that the reason behind the 10\% overhead from the if statement was due to its condition using the \texttt{.any} function in NumPy, for a NumPy array.
-    So it wasn't the if-else statement itself but rather the \texttt{.any} function determining if the condition was true or false.
+    While it is generally always recommended to use \texttt{if-else} over \texttt{try/except} there are exceptions to this rule, profiling showed that a specific \texttt{if-else} in this project was taking 10\% of the execution time.
+    It was revealed that the reason behind the 10\% overhead from the \texttt{if} statement was due to its condition using the \texttt{.any} function in NumPy, for a NumPy array.
+    So it wasn't the \texttt{if-else} statement itself but rather the \texttt{.any} function determining if the condition was true or false.
     The \texttt{.any} function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
-    Again generally if statements are recommended but profiling showed that due to the long execution time of the \texttt{.any} function it was both unnecessary and degrading performance.
+    %kanske måste kolla igenom tense för nedanstående.
+    Again \texttt{if} statements are generally recommended but profiling showed that due to the long execution time of the \texttt{.any} function it was unnecessary and degraded performance.
 
 %   \item \textbf{Rule 8}, avoid resizing NumPy arrays.
 %   \item \textbf{Rule 9}, let eval and exec work on compiled code.
@@ -504,54 +511,49 @@ Not all the rules from Langtangen have been listed in \ref{guidelines}, the few 
 \end{itemize}
 
 The list shown in Python Scripting for Computational Science~\cite{pythonBook} are good guidelines, but profiling is to be seen as the first and foremost tool to use and interpret when optimizing Python or any high-level language code for that matter.
-The whole book of High Performance Python can be seen as a long step by step guide on how to best optimize and improve performance of code in Python, explaining in detail why each step is performed. 
-The first steps in High Performance Python go into great detail about profiling and repeat throughout the book that one must continuously profile and interpret the results before anything else, both execution and memory usage.
+The first chapter in High Performance Python go into great detail about profiling and repeat throughout the book that one must continuously profile and interpret the results, both execution and memory usage.
 While there exist many different tools such as compiling and clusters to improve performance in Python, it is important that one has exhausted the previously listed options in High Performance Python first as they are usually what is gonna degrade performance~\cite{oreillyCh10}.
 
 \subsubsection{Profiling and Code Optimizations in SW Engineering}
 Profiling in Python was made with the cProfile library,
-it is a standard library in Python and the recommended library to use by Python~\cite{cProfile}.
+it is a standard library in Python and the recommended library to use by Python~\cite{Py:cProfile}.
 cProfile is a library made in C for collecting statistics during runtime with a focus on minimizing the overhead.
 There is also another standard Python library for profiling in Python called profile.
-Profile does offer more features already builtin but it is in general less recommended since profile runs slower and skews the statistics more when running long programs~\cite{cProfile}.
+Profile have more features already builtin but is generally less recommended since profile runs slower and skews the statistics more when running long programs~\cite{Py:cProfile}.
 
 Profiling in MATLAB was done using the native profiler~\cite{matProfile}.
 Both profiling libraries in Python and MATLAB introduces some overhead and certainly to different degrees.
 This project however assumed the overhead to be negligible in comparison to execution time and for any comparison between the Python and MATLAB implementation.%Could Expand and discuss the overhead from profiling.
 
-The main issues with the directly translated Python script after profiling was discovered to be saving files as .mat files using the scipy.io module.
-Saving in .mat format took over half of the execution time, even though the file format was the same as in the MATLAB script.
-Because the files were not saved in version 7.3 and above, it could be the old way of compressing the .mat files that were creating the large overhead but it wasn't likely as the original MATLAB files didn't use 7.3 and above either.
-Since the issue of saving in .mat format doesn't exist in the MATLAB scripts the problem in Python could be a multitude of potential causes.
-One potential cause could be because MATLAB already stores the data in .mat format in memory and it was the the conversion of the datastructures from Python to .mat format causing the overhead.
-Because the total amount of data being saved is somewhat large (>50 GB), it could be how the function was implemented in Python being slower for larger data structures or nested structures. 
-Seeing as to how the overhead is quite massive it was probably due to a mix of things making savemat inefficient in this project.
-There were however a few ways to improve the execution time if theoretically keeping the .mat format was important.
-An example of improving savemat in Python would be to use the compression option.
-A thing which could improve savemat would be to use HDF5 format which versions of MATLAB above 7.3 uses. 
-HDF5 is built to be a fast way of storing large amount of data.
-HDF5 was never implemented though since it was not necessary to save in .mat format, instead the savemat problem was solved by using the Python module pickle to save files.
-After switching to pickle to save the files, the time consumed saving files dropped to a fraction of the execution time for the Python scripts.
+%\subsubsubsection{Save Format}
 
-Of course the problem of saving in .mat format was not already a problem in the MATLAB scripts, but rather something introduced in the conversion to Python and thus something which shouldn't have been there in the first place.
+%add something about different ways of saving due to it being a problem in this project.
+Multiple ways of saving Python data was explored during the project due to \texttt{savemat} from the scipy.io library bottlenecking the code, which is discussed in \ref{MATPYConv}.
 
-There are other ways of saving files which are even faster, one such solution which was explored was Apache arrow. 
-Apache arrow is a library for storing flat or hierarchical data in a columnar memory format, designed for efficiency on modern hardware like GPUs and CPUs.
-The advantage of a columnar memory format is that columnar data is usually of the same data types, something which compression can utilize to further compress data and save space.
 
-Because CPUs are much faster than data buses and disks, compressing data can be relatively cheap in terms of time in contrast to writing directly to disk.
-A smaller file size due to compression decreases the time on the data bus when moving data to disk.
-Even if a smaller amount of data takes less time on the bus, one must still consider the time it takes to compress the data, the compression ratio as well as the write speed, the majority of which which depend on what hardware it is run on.
+There were multiple ways of saving files all with different advantages and disadvantages, one solution which was explored was Apache Arrow.
+Apache Arrow is a library for storing flat or hierarchical data in a columnar memory format, designed for efficiency on modern hardware like GPUs and CPUs~\cite{AA:apacheArrow}.
+According to Apache Arrow the advantage of a columnar memory format~\cite{enwiki:columnarData} is the use of vectorization operations on data with SIMD (Single Instruction, Multiple Data) instructions included in modern processors.
+As data is sorted into columns, multiple entries in a single column could be changed with SIMD instructions~\cite{AA:Overview}.
+
+
+Because CPUs are much faster than disks~\cite{DiskSlow}, compressing data could be relatively cheap in terms of time in contrast to writing directly to disk~\cite{1607248}.
+A smaller file size due to compression decreases the time on the data bus when moving data to disk and the time to write to disk.
+Even if smaller amounts of data takes less time on the bus, one must still consider the time it takes to compress the data, the compression ratio as well as the write speed, the majority of which which depend on what hardware it is run on.
 
 Not only CPUs have become increasingly better, a lot of work has been done with storage devices as well.
 Modern hardware have tried to move disk closer and closer to the CPU with various means, such as using caches within the disk to be able to use a faster data bus for example.
 Even if storage devices have improved it is worth noting that CPUs have improved much faster and will in general always be faster than any other part in a machine.
+Most other parts in a machine are slower than the CPU because machines use a memory hierarchy to simulate fast and large storage~\cite{ComputerMemoryHierarchy, enwiki:memoryHierarchy}.
+%Ignoring the price of fast storage, there is still a fundamental law of physics which is unavoidable when designing CPUs which is the speed of light.
+%The reason the speed of light is important is because electricity moves at the speed of light and CPU clock frequencies today can be up to \SI{8}{\giga\hertz}.
+%The length speed of light moves between one clock cycle at \SI{8}{GHz} is about \SI{4}{\centi\meter} ($c/3GHz$) which is the theoretical maximum, not accounting for other factors which decreases the length traveled in a CPU.
 With the CPU being extremely faster than disk it is sometimes worth investigating things such as data compression for a better runtime performance.
 
-The implementation of Apache arrow's save format was however left as an in depth problem due to the time saving files becoming negligible after using pickle.
+The implementation of Apache Arrow's save format was however left as an in depth problem due to the time saving files becoming negligible after using pickle.
 
-After removing the problematic savemat new profiling was made, identifying unnecessary code, parts which could be replaced with a faster extension module or more optimized Python code.
-For a high level scripting language such as Python anything done in an extension module is almost always faster, since they are usually written in a faster language such as C or fortran.
+%After removing the problematic \texttt{savemat} new profiling was made, identifying unnecessary code, parts which could be replaced with a faster extension module or more optimized Python code.
+For a high level scripting language such as Python anything done in an extension module is almost always faster, since they are usually written in a faster language such as C~\cite{cFaster}.
 Modules written in Python are usually also faster as they are developed over time by a larger team with a userbase who have interests in using fast and optimized modules.
 
 Even with the extensive community behind Python there will still be things that cannot be exchanged with an extension module.
@@ -562,23 +564,24 @@ The final solution to mapping classes to data had a growth of $\mathcal{O}(n\log
 A linear solution written in pure Python was possible but the advantage with the final solution was that both terms were fast due to using NumPy.
 NumPy is written in C and C++, bringing down the computations to a lower level and making things which at the surface seems slower much faster.
 %%Write more here.
+\newpage
 \lstinputlisting[language=Python]{Scripts/mvpa/ArrGroupLabel.py}
 %Write muchos more about it 
 
-A function which was found to be unecessary was an if condition checking that all elements in an array were not empty, this check took more than 10\% of the execution time for \texttt{mvpa\_datapartition}.
+A function which was found to be unecessary was an \texttt{if} condition checking that all elements in an array were not empty, this check took more than 10\% of the execution time for \texttt{mvpa\_datapartition}.
 Checking if an array is empty is slow both in Python and MATLAB as it has to iterate through every index or check if it exists.
-Even if an if statement was shown to be at fault here, it is exceedingly rare and is to be viewed as the exception.
-try/except is slower than if statements and raises the problem of having to deal with exceptions which are expected but might be raised where they are unexpected.
-Exceptions are slow and expensive therefore it is imperative to be careful if one uses try/except instead of an if statement.
-The extra overhead from exceptions can degrade perfomance more than just using an if statement it is therefore important that the majority of the time there aren't any exceptions or that the alternative is exceedingly slow.
-It is in general advised to use if statements since boolean expressions are usually fast operations.
+Even if an \texttt{if} statement was shown to be at fault here, it is exceedingly rare and is to be viewed as the exception.
+\texttt{try/except} is slower than \texttt{if} statements and raises the problem of having to deal with exceptions which are expected but might be raised where they are unexpected.
+Exceptions are slow and expensive therefore it is imperative to be careful if one uses \texttt{try/except} instead of an \texttt{if} statement.
+The extra overhead from exceptions can degrade perfomance more than just using an \texttt{if} statement it is therefore important that the majority of the time there aren't any exceptions or that the alternative is exceedingly slow.
+It is in general advised to use \texttt{if} statements since boolean expressions are usually fast operations.
 
-After replacing the if statement with try/except keywords, the execution time compared to before when profiling was 10\% less.
+After replacing the \texttt{if} statement with \texttt{try/except} keywords, the execution time compared to before when profiling was 10\% less.
 After testing no difference in results were noticed as well.%Write about it being same results as well.
 
-Due to the highly nested and long for loops in the original code, small performance gains were found in using the builtin map functions in Python, which compiles a function into C.
+Due to the highly nested and long for loops in the original code, small performance gains were found in using the builtin map function in Python, which could save a few lines of code.
 There is a caveat to using map in Python, there exists overhead in using map functions and could potentially be slower than a for loop or a fast list comprehension. 
-To see if map is faster it is as with every thing in a high level language when it comes to performance, recommended to profile between solutions to see what is actually faster.
+To see if \texttt{map} is faster it is as with every thing in a high level language when it comes to performance, recommended to profile between solutions to see what is actually faster.
 
 %Should I have code here with the critical part of the code?
 
@@ -586,16 +589,7 @@ Python lookups, this is both a vast and small set of optimizations in Python.
 It is debated if people should even think about lookups since there are usually much larger speedups in either using another lower level language or in compiling the code.
 Just as there are problems in how imports of modules are made, the same problem of multiple lookups arises for nested Python objects which makes seperate lookups for each layer of a nested object.
 A way to avoid multiple unecessary lookups for nested objects in loops is to save each layer as a temporary variable to reference.
-While most of the thins mentioned might be micro-optimizations and often not meaningful by themselves they do add up, however the most critical optimization in the project was due to lookups.
-Profiling revealed that \\\texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time linearly searching for indices in a list, something a novice or a not so experienced programmer might think about.
-Linear searches are a famous performance killer due to their fast growth and the solution was adding a few more lines, but the changes made the equivalent part of the code negligible.
-Because the linear search was simply looking for indices of a range of specific elements the linear search could be removed by mapping the indices to a hashmap or dictionary in Python, with the elements as the keys.
-With each index mapped to its element as the key, each lookup became fast and constant.
-Using a hashmap removed 81\% for \texttt{Do13TestClassifier\_ShuffledLabels} compared to the original execution time using the linear search.
-
-Most other larger improvements were made by finding equivalent NumPy functions used in the code, to bring down the level where it was computed.
-Switching the implementation used to train the SVMs from sklearn.SVC to sklearn.libSVM saw a large performance improvement.
-libSVM uses another lower level library compared to SVC and is faster for problems with a larger set of features.
+While most of the things mentioned might be micro-optimizations and often not meaningful by themselves they do add up, however the most critical optimization in the project was due to lookups.
 %Need to extend these two sentences, feels a bit weak.
 %Expand on how the feature reduction might be unecessary. Could be interesting to compare.
 
@@ -620,7 +614,8 @@ With the vast majority of machine learning models support in Python it is not we
 With almost all new machine learning models available in Python, it is the preferred language for implementing research using machine learning.
 
 The limiting factor in conversion from MATLAB to Python is usually a lack of documentation or insufficient details in documentation to be able to reproduce identical results.
-Due to small differences in implementation of the same functions between languages which are caused by a platitude of reasons, the small differences can cause a cascade of larger difference at the end of the program.
+Due to small differences in implementation of the same functions for different languages, a cascade of larger differences could be created at the end of the program.
+%Ska jag lägga till några exempel om vad som va annorlunda, kanske citera nånting och visa att de e implementerade annorlunda.
 It is because of the small differences why the documentation is usually the limiting factor as one is searching for details to fix them.
 Due to the differences in implementation between the two EEG processing libraries used in MATLAB and Python, FieldTrip and MNE it was decided to no convert the preprocessing parts of the MATLAB scripts.
 A reason why you don't usually translate code and instead redo the whole program from scratch, is that even seemingly identical and standarized models such as SVM and their libraries are implemented differently.
@@ -628,7 +623,11 @@ Seemingly identical libraries are implemented differently, in different language
 
 
 \subsection{Code Parallelization}
-The code was massively parallelizable, with multiple layers being able to be computed in parallel.
+Parallelization refer to the conversion of sequential code to utilize multiple processors or vector instructions to execute multiple instructions in parallel.
+Classically CPUs execute instructions in order one after the other, however with the introduction of multiple cores in computers instructions which are otherwise independent can be executed in parallel.
+Parallelization does not always have a straight forward solution and so code often has to be manually parallelized.
+With code often being implemented sequentially first, parallel code have often been converted and thus parallelized.
+
 Even if a problem is parallelizable it is not always the best course of action to use a cluster if there are no reasons to do so.
 The execution time of having to distribute a problem to the entire cluster has to outweigh the original execution time.
 Because the CPU is extremely fast the communication overhead from distributing work to other cores often makes a program slower than running everything on the same CPU.
@@ -722,7 +721,7 @@ A fast way to further optimize the MATLAB could be to create checkpoints to only
 In the end however the focus of the project was not to optimize the MATLAB code but rather the Python implementation.
 
 
-\subsection{MATLAB to Python Translation}
+\subsection{MATLAB to Python Translation}\label{MATPYConv}
 
 The execution time of the preprocessing scripts were significantly less than the training of the classifiers and generation of data. 
 The necessary literature and theory behind understanding the preprocessing scripts in order to fully translate those scripts was deemed not to be of focus for this project.
@@ -740,27 +739,47 @@ Python's scikit-learn package does allow someone to write their own error functi
 
 After implementing a working SVM in the Python code a profile was made of the code using the cProfile module.
 After profiling the Python code with the cProfile module, it was found to be three times slower than the MATLAB counterpart.
-The reason to why the Python code was three times slower was found to be scipy.io's built-in savemat function, which took more than 69\% of the computational time.
-After switching to Python's pickle module, the computational time for the \texttt{Do11TrainClassifier} script was half to the MATLAB counterpart. %%Shuffle away this to Python side
+The reason to why the Python code was three times slower was found to be scipy.io's built-in \texttt{savemat} function, which took more than 69\% of the computational time.
+Because the files were not saved in version 7.3 and above, it could be the old way of compressing the .mat files that were creating the large overhead but it wasn't likely as the original MATLAB files didn't use 7.3 and above either.
+Since the issue of saving in .mat format doesn't exist in the MATLAB scripts the problem in Python could be a multitude of potential causes.
+One potential cause could be because MATLAB already stores the data in .mat format in memory and it was the the conversion of the datastructures from Python to .mat format causing the overhead.
+Because the total amount of data being saved is somewhat large (>50 GB), it could be how the function was implemented in Python being slower for larger data structures or nested structures. 
+Seeing as to how the overhead is quite massive it was probably due to a mix of things making \texttt{savemat} inefficient in this project.
+
+There were however a few ways to improve the execution time if theoretically keeping the .mat format was important.
+An example of improving \texttt{savemat} in Python would be to use the compression option.
+A thing which could improve \texttt{savemat} would be to use HDF5 format which versions of MATLAB above 7.3 uses. 
+HDF5 is built to be a fast way of storing large amounts of data.
+HDF5 was never implemented though since it was not necessary to save in .mat format, instead the \texttt{savemat} problem was solved by using the Python module pickle to save files.
+After switching to pickle to save the files, the time consumed saving files dropped to a fraction of the execution time for the Python scripts.
+Switching to pickle decreased the computational time for the \texttt{Do11TrainClassifier} script to half of the MATLAB counterpart. %%Shuffle away this to Python side
+
+Of course the problem of saving in .mat format was not already a problem in the MATLAB scripts, but rather something introduced in the conversion to Python and thus something which shouldn't have been there in the first place.
 
 \subsection{Optimization of Python}
-The first steps in optimizing after removing savemat was profiling the code again using cProfile.
+The first steps in optimizing after removing \texttt{savemat} was profiling the code again using cProfile.
 
-After profiling the Python code the main issues were identified to be NumPy's any and in1d functions.
-NumPy's any function was able to be cut out using try and except statements, skipping the if statements all together.%%Good thing to have in theory.
+After profiling the Python code the main issues were identified to be NumPy's any and \texttt{in1d} functions.
+NumPy's any function was able to be cut out using \texttt{try} and \texttt{except} statements, skipping the \texttt{if} statements all together.%%Good thing to have in theory.
 
 For loops in Python are usually very slow because each iteration is reinterpreted since Python doesn't compile the code.
-Something that is avoidable using for example map, filter, reduce or list comprehensions. 
-For all these functions the expressions are interpreted once and then computed for the whole loop, saving several iterations of interpretations for the same code. 
-While there are tips for what and when to use there is nothing which is universally true when it comes to Python as there are many things which interact with eachother, Python's founder seems to favor list comprehensions himself but have also showed that it is not always the fastest.
+Something which could speed up loops in Python are for example map, filter or list comprehensions~\cite{Py:map, Py:filter, Py:listComprehension}. 
+For all these functions the expressions are interpreted once and then computed for the whole loop, theoretically saving several iterations of interpretations for the same code. 
+There does not seem to be a definitive answer to what is faster between ordinary loops, map, filter or list comprehensions though.
 In the end when it comes to Python one must follow profiling to see what is fastest for everything.
+%Maybe unecessary sentence
 Map is a native function in Python that takes a function and an iterable as arguments and compiles a list of the outputs from the function using the items in the iterable.
 
-The script \texttt{mvpa\_applycrossvalclassifier} used in1d to find the index of multiple elements for a list which mapped sensor names to values, over 200 times.
-Linear searches like in1d is in general very slow and shouldn't be used extensively like it was in the original code.
-in1d was removed and replaced with a hashmap which used each sensor name as the key and each index corresponding to the sensor name as the value.
-The execution time previously dominated by in1d in \texttt{Do13TestClassifier\_ShuffledLabels} with 81\%, saw the equivalent part vanish when using a hashmap.
+Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \\\texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time in \texttt{in1d}.
+The script \texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements for a list which mapped sensor names to values, over 200 times.
+Linear searches like \texttt{in1d} are generally avoided because of the linear growth and it is advisable to find faster solutions if possible.
+\texttt{in1d} was removed and replaced with a hashmap which used each sensor name as the key and each index corresponding to the sensor name as the value.
+With each index mapped to its element as the key, each lookup became fast and constant.
+The execution time previously dominated by \texttt{in1d} in \texttt{Do13TestClassifier\_ShuffledLabels} with 81\%, saw the equivalent part drop to less than a percent when using a hashmap.
 
+Most other larger improvements were made by finding equivalent NumPy functions used in the code, to bring down the level where it was computed.
+Switching the implementation used to train the SVMs from sklearn.SVC to sklearn.libSVM saw a large performance improvement.
+libSVM uses another lower level library compared to SVC and is faster for problems with a larger set of features.
 
 \subsection{Transition to Parallel Code}
 After translation of the original MATLAB code the Python code was
