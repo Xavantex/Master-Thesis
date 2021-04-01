@@ -27,6 +27,7 @@
 \usepackage{xcolor}
 \usepackage[binary-units=true]{siunitx}
 \sisetup{load-configurations = abbreviations}
+\usepackage{cleveref}
 
 %\setlength\parindent{24pt}
 
@@ -500,7 +501,7 @@ Not all the rules from Langtangen have been listed in \ref{guidelines}, the few 
     Again \texttt{if} statements are generally recommended but profiling showed that due to the long execution time of the \texttt{.any} function it was unnecessary and degraded performance.
 
 %   \item \textbf{Rule 8}, avoid resizing NumPy arrays.
-%   \item \textbf{Rule 9}, let eval and exec work on compiled code.
+%   \item \textbf{Rule 9}, let \texttt{eval} and exec work on compiled code.
 %   \item \textbf{Rule 10}, callbacks to Python from fortran and C/C++ are expensive.
 %   \item \textbf{Rule 11}, avoid unecessary allocation of large data structures.
 %   \item \textbf{Rule 12}, be careful with type matching in mixed Python-F77 software.
@@ -676,22 +677,32 @@ The Ray fix was not implemented for the Single thread implementations as MATLAB 
 \subsection{Error Estimation and Computations}
 
 The speedup factor when scaling up from 1 machine in Ray was calculated by dividing the execution time of using 1 machine in Ray with the execution time of using n number of machines, where n is between 1 and 25 machines.
-The speedup equation can be seen in equation \eqref{speedupFac}, $f_{speedup}$ is the relative speedup compared to using 1 machine, $t_1$ is the mean execution time of using 1 machine in Ray and $t_n$ is the mean execution time of using n machines.
+The speedup equation can be seen in \cref{speedupFac}, $f_{speedup}$ is the relative speedup compared to using 1 machine, $t_1$ is the mean execution time of using 1 machine in Ray and $t_n$ is the mean execution time of using n machines.
 
 \begin{equation}\label{speedupFac}
     f_{speedup} = \frac{t_1}{t_n}
 \end{equation}
 
 Standard deviation and mean of the time measurements were calculated using NumPy's std and mean functions.
-All measurements were assumed to be independent and no error for the time measurements were included.
+All measurements were assumed to be independent and because cProfile does not specify the time resolution, no time resolution for the time measurements were included in the calculations.
 
-Since the measurements were assumed to be independent, the speedup factor of Ray compared to 1 machine used simple propagation of uncertainty seen in equation \eqref{ErrorProp} to compute the relative error.
+Since the measurements were assumed to be independent, the speedup factor of Ray compared to 1 machine used simple propagation of uncertainty seen in \cref{stdProp,ErrorProp} to compute the relative error.
 
-\begin{equation}\label{ErrorProp}
-    s_{speedup} = \sqrt{\frac{s_{1}^2t_n^2 + s_{n}^2t_1^2}{t_n^4}}
+\begin{equation}\label{stdProp}
+    s_f = \sqrt{\left(\frac{\partial f}{\partial x}\right)^2s_x^2 + \left(\frac{\partial f}{\partial y}\right)^2s_y^2 + \cdots}
 \end{equation}
 
-$s_{speedup}$ in equation \eqref{ErrorProp} is the standard deviation of the speedup factor, $s_1$ and $s_n$ are the standard deviations of the execution times for using 1 machine and n machines respectively.
+\begin{equation}\label{ErrorProp}
+    \begin{aligned}
+        s_{speedup} &=  \sqrt{\left(\frac{\partial f_{speedup}}{\partial t_1}\right)s_1^2 + \left(\frac{\partial f_{speedup}}{\partial t_n}\right)s_2^2} \\
+        s_{speedup} &= \sqrt{\left(\frac{1}{t_n}\right)^2s_1^2 + \left(\frac{-t_1}{t_2^2}\right)^2s_2^2}\\
+        s_{speedup} &= \sqrt{\frac{s_{1}^2t_n^2 + s_{n}^2t_1^2}{t_n^4}}
+    \end{aligned}
+\end{equation}
+
+Assuming variables are independent the equation for propagation of uncertainty is as seen in \cref{stdProp}.
+Using \cref{stdProp} the propagation of uncertainty for \cref{speedupFac} is as shown in \cref{ErrorProp}.
+$s_{speedup}$ in \cref{ErrorProp} is the standard deviation of the speedup factor, $s_1$ and $s_n$ are the standard deviations of the execution times for using 1 machine and n machines respectively.
 
 The total execution time of non Ray implementations were calculated by adding each individual script's mean execution time.
 The standard deviation of the total execution time was calculated by adding each individual scripts standard deviation following the standard way of calculating propagation of uncertainty.
@@ -701,23 +712,28 @@ The standard deviation of the total execution time was calculated by adding each
 \subsection{Rewriting MATLAB}
 
 Upon retrieval of the MATLAB code it was executed to confirm it was intact and doing what it was intended for. 
-After executing the code it was read through thoroughly to understand how it was constructed and what was happening.
+After execution, the code was read thoroughly to understand how it was constructed and what was happening.
 The MATLAB code was profiled to have an overview of performance and potential bottlenecks.
 The first profile would serve as a baseline for the project.
 
-Since all of the main scripts were mostly written using the native eval function from MATLAB, they were first translated to basic code. 
-The removal of the eval functions increased readability, and made later translation to Python easier. With no eval operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
-Removing eval also allowed for basic parallelization in MATLAB, using the parfor function from the Parallel Computing Toolbox in MATLAB.
-Removing eval and implementing the parfor in MATLAB immediately showed a drastic speed up. 
-eval makes any potential compilation impossible since it is not explicit can utilize dynamice variables for example.
+Since all of the main scripts were mostly written using the native \texttt{eval} function from MATLAB, they were first translated to basic code.
+\texttt{eval} is a builtin function in MATLAB which evaluate string values as MATLAB expressions~\cite{mat:eval}.
+There are many reasons to avoid \texttt{eval} and while it allows for some interesting interactions it is safer, faster and easier to read code which do not use eval.
+MATLAB usually compiles code the first time it is run but it is not possible with \texttt{eval}.
+It is also not safe, \texttt{eval} could for example unexpectedly overwrite variables with new values and reading code which isn't properly color coded because they are strings is harder~\cite{matEval}.
 
-The largest overhead after after implementing parfor was the loading of large data. 
+The removal of the \texttt{eval} functions increased readability, and made later translation to Python easier. With no \texttt{eval} operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
+Removing \texttt{eval} also allowed for basic parallelization in MATLAB, using the \texttt{parfor} function from the Parallel Computing Toolbox in MATLAB.
+The parallelization of the preprocessing code of MATLAB was very briefly explored and quickly left as an in-depth problem for future work.
+Removing \texttt{eval} and parallelizing the preprocessing scripts with \texttt{parfor} in MATLAB seemed to show a significant speed up.
+The parallelized preprocessing scripts were unfortunately never confirmed to work as intended before leaving it for future work.
+Apart from assuring the parallelized preprocessing scripts were working as intended, the parallelization of the preprocessing scripts were outside the scope and focus of the project so the results were left out.
+%Unecessary sentence no?down below
+%\texttt{eval} makes any potential compilation impossible since it is not explicit, it can utilize dynamic variables for example.
+
+The largest overhead after implementing \texttt{parfor} was the loading of large data. 
 MATLAB was able to avoid the large time penalty of loading from disk with most of the major scripts.
-Even with a dramatic improvement in performance when using parfor, it did not scale well with the number of threads used.
-The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all uneccessary loading from disk.
-It would not change the end result just integrating the scripts more and getting rid of all the intermediate loading of files.
-
-A fast way to further optimize the MATLAB could be to create checkpoints to only execute code which have been changed, for example.
+Even with a significant improvement in performance when using \texttt{parfor}, it did not scale well with the number of threads used.
 In the end however the focus of the project was not to optimize the MATLAB code but rather the Python implementation.
 
 
@@ -725,7 +741,8 @@ In the end however the focus of the project was not to optimize the MATLAB code 
 
 The execution time of the preprocessing scripts were significantly less than the training of the classifiers and generation of data. 
 The necessary literature and theory behind understanding the preprocessing scripts in order to fully translate those scripts was deemed not to be of focus for this project.
-FieldTrip, the preprocessing library used in MATLAB, and MNE its equivalent in Python are not implemented and does not process data the same way and would need to be understood in-depth to be able to translate the preprocessing scripts.
+FieldTrip, the preprocessing library used in MATLAB and its equivalent in Python, MNE are not implemented nor process data the same way.
+To translate the preprocessing script in MATLAB would have required an in-depth knowledge of both libraries and a considerate amount of development time.
 Because of the low execution time and lack of knowledge it was decided the preprocessing scripts were not to be translated to Python.
 
 Apart from the preprocessing scripts the MATLAB code was first translated line by line to Python, as close to the original code in MATLAB as possible.
@@ -767,8 +784,6 @@ Something which could speed up loops in Python are for example map, filter or li
 For all these functions the expressions are interpreted once and then computed for the whole loop, theoretically saving several iterations of interpretations for the same code. 
 There does not seem to be a definitive answer to what is faster between ordinary loops, map, filter or list comprehensions though.
 In the end when it comes to Python one must follow profiling to see what is fastest for everything.
-%Maybe unecessary sentence
-Map is a native function in Python that takes a function and an iterable as arguments and compiles a list of the outputs from the function using the items in the iterable.
 
 Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \\\texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time in \texttt{in1d}.
 The script \texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements for a list which mapped sensor names to values, over 200 times.
@@ -796,7 +811,7 @@ Since there is no dependency in processing the subjects this was a perfect first
 The first problem with only parallelizing over the number of subjects was that number of subjects were 18 and the number of available cores to use within the cluster was 20, thus new implementations needed to be more scalable.
 Because the first layer of parallelization saw a dramatic decrease in execution time, the original execution time of a few days compared to the new execution time under an hour led to questioning the communication overhead.
 
-Amdahl's law states that the bottleneck of parallelizing a program will always be the serial part of the code, in equation \eqref{Amdahl} $S_{latency}(s)$ is the total speedup of a program after parallelizing, p is the fraction of the whole program which is parallelizable and s is the speedup of the parallelizable part of the program.
+Amdahl's law states that the bottleneck of parallelizing a program will always be the serial part of the code, in \cref{Amdahl} $S_{latency}(s)$ is the total speedup of a program after parallelizing, p is the fraction of the whole program which is parallelizable and s is the speedup of the parallelizable part of the program.
 The implication of Amdahl's law is that if 80\% of a program is parallelizable, the program can at most be cut down to 20\% of the original execution time given an infinite amount of cores due to the 20\% which must be done serially.
 
 \begin{equation}\label{Amdahl}
@@ -977,7 +992,7 @@ The code could probably see further speedup with a more in-depth analysis of the
 
 \section{Outlook}
 
-There are still thing which could be improved, I suspect that at the moment a big reason for the 15 minute hard limit for the Ray implementation might be due to the high scalability of the current code.
+There are still things which could be improved, I suspect that at the moment a big reason for the 15 minute hard limit for the Ray implementation might be due to the high scalability of the current code.
 The very smallest parallel code block is surprisingly fast to execute and the need to distribute them faster and faster might be what's limiting Ray in utilizing the given hardware to its full potential, bottlenecking in the scheduling.
 
 A suggestion would be to try and divide the code into larger chunks, so that the process takes longer and Ray doesn't need to schedule as many processes.
@@ -990,6 +1005,11 @@ Some problems would be how to handle setup and remote execution of the code, set
 The advantages are of course the handling of dependencies, possible speedup from skipping unnecessary unchanged parts in the code and the speedup/scalability of Ray.
 
 There is the possibility of developing a custom or another general framework for Ray to track dependencies and accelerating computations, since the parallel parts of the Accelerator wouldn't be used it could be faster.
+
+The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all unnecessary loading from disk.
+It would not change the end result just integrating the scripts more and getting rid of all the intermediate loading of files.
+A fast way to further optimize the MATLAB could be to create checkpoints to only execute code which have been changed, similiar to the Accelerator used in one Python implementation.
+The MATLAB code could be tested on octave to integrate it with the Python scripts and finally move it to the Ray cluster for the maximal speedup.
 
 \bibliographystyle{vancouver}
 \bibliography{reference}
