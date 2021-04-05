@@ -39,19 +39,11 @@
 
 
 
-\usepackage[toc]{glossaries}
+\usepackage[toc,nogroupskip]{glossaries}
 \makeglossaries
 
 
 % * <xavante.erickson@gmail.com
-% 
-% skrivas om? är stratosfären rätt och 5 timmar? någon?
-% 
-% ^ <xavante.erickson@gmail.com> 2018-05-22T13:29:40.205Z.
-% 
-% Ordlista, t.ex. CIGS -Fixat
-% 
-% ^ <xavante.erickson@gmail.com> 2018-05-22T13:29:40.205Z.
 
 \newglossaryentry{Numpy}
 {
@@ -119,9 +111,15 @@
     description = {Node infers to a virtual machine or a machine in a larger cluster or cloud which one uses to compute part of or a whole program}
 }
 
-\newglossaryentry{Cluster computing framework}
+\longnewglossaryentry{Cluster computing framework}
 {
-    name = Cluster computing framework,
+    name={
+        \begin{tabular}{@{}l}    % use @{} to suppress the space                
+            Cluster computing\\ 
+            framework
+        \end{tabular} 
+    },
+    sort= Cluster computing framework,
     description = {A cluster computing framework is a framework for doing computations on multiple computers often connected through LAN or other ethernet interfaces}
 }
 
@@ -179,34 +177,37 @@
 
 
 \section*{Abstract}
-When realizing that the common GPU could be used to accelerate large matrix computations, there was an explosion in research and industry as it became cheap to train and develop machine learning models.
-With the revolution of machine learning becoming commonplace, it has also begun to seep into all areas of research much the same way computers became a necessity in research and society today. \par
+With the realization that a common GPU could be used to accelerate large matrix computations, there was an explosion of research in universities and the industry as it became cheap to train and develop machine learning models.
+With the revolution of machine learning becoming cheap, it has also begun to seep into all areas of research much the same way computers became a necessity in research and society today. \par
 
-With all things where people are not experts there are bound to be small issues, even more so in the case for programming and computer science.
-A researcher or enthusiast using machine learning models in a high level language will only see what the developers of the model promise, they won't see the chain of libraries and APIs from hardware instructions to the functions they use.
-Despite the large chain of middlemen most programs work as advertised, but there are still caveats to a lot of high-level languages. 
-While creating a program these days have become relatively simple, it is by no means easy to create general programs which fully utilize the hardware they run on. \par
-
-Psychologists from Lund have conducted research on classifying images in three different categories, faces, landmarks and objects.
+Researchers from Lund have conducted research on classifying images in three different categories, faces, landmarks and objects.
 The psychologists showed several pictures and words with no inherit link between them to 18 different subjects and asked the subjects to remember them.
 Later they showed the words associated to the specific pictures shown and asked the subjects to recall which picture was associated to the specific words.
 During the experiment they recorded enormous amounts of data using an EEG cap, a rubber cap with many probes attached at specific points.
 They preprocessed the data and trained separate SVM (Support Vector Machine)~\cite{wiki:SVM} models on the encoding data for each subject to distinguish between three categories, faces, landmarks and objects.
 They tested the models on the data recorded when they were asked to retrieve the associated pictures.
-The entirety of the scripts took about a weeks time to execute originally.\par 
+The entirety of the scripts took about a \emph{weeks} time to execute originally.\par 
 
-The scripts written to compute this were extremely parallelizable and contained a few key mistakes in how to complete the computations fast.
+The scripts written to compute this had the potential to be extremely parallelized and could potentially be optimized to complete the computations much faster.
 The scripts were originally written in MATLAB code which is a propriety software and not the go to language for machine learning.
 With much other data science transitioning into Python as well, it was a key part in this project to understand the differences between MATLAB and Python and how to translate MATLAB code to Python.\par
 
-After translation, the code was tested versus the original results and profiled for obvious key mistakes, for example functions which took unecessarily long time to execute.
-After optimisation the longest running script saw an improvement of being 16 times faster than the original script.
+With the exception of the preprocessing scripts, all the original MATLAB scripts were translated to Python.
+The Translated Python scripts were optimized for speed and parallelized to decrease the execution time even further.
+Two major parallel implementations of the Python scripts were made.
+One parallel implementation was made using the Ray framework to compute in the cloud~\cite{ray:whatIsRay}.
+The other parallel implementation was made using the Accelerator, a framework to compute using local threads~\cite{exax:Accelerator}.
+After translation, the code was tested versus the original results and profiled for any key mistakes, for example functions which took unnecessarily long time to execute.
+After optimisation the single thread script was 12 times faster than the original MATLAB script.
+
+The final execution times were around \SI[parse-numbers=false]{12-15}{\minute}, compared to the benchmark of \SI{48}{\hour} it is about 200 times faster.
+The benchmark of the original code used less iterations than the researchers used, decreasing the computational time to \SI{48}{\hour}.
 
 The results of the project highlight the importance of learning and teaching basic profiling of slow code.
 While not entirely considered in this project, doing complexity analysis of code is important as well.
 %Not sure if I should include the below stuff though. Might be unecessary to talk about.
-Complexity analysis becomes more fuzzy in high level languages though, as things which might grow faster theoretically can be slower depending on which level it is computed.
-
+Future work should perhaps include doing a deeper complexity analysis on both high and low level, since a high level language such as Python relies heavily on modules with low level code.
+Future work could also dive deeper into the code of NumPy, as the current code relies heavily on NumPy and has shown to be a bottleneck in this project.
 
 \newpage
 
@@ -217,6 +218,7 @@ Complexity analysis becomes more fuzzy in high level languages though, as things
 
 \glsaddall
 %\printglossaries
+\renewcommand*{\arraystretch}{1.1}
 \printglossary[type=main,style=long,nonumberlist]
 
 \newpage
@@ -225,11 +227,18 @@ Complexity analysis becomes more fuzzy in high level languages though, as things
 
 \subsection{Overview}
 %Under construction as of 23/03/2021
+
 Researchers at Lund have investigated various means of interpreting and classifying brain signals in order for BCIs to ultimately create products which can help people in ordinary life, interpreting their thoughts or wishes.
 
 A recent project sought to classify between three different classes of objects, landmarks, faces and objects.
 The problem with the project was the long processing time of all the data from start to finish, it took more than two days to complete.
 Having to wait two days for the data to finish gave little room for experimentation and each execution had to be planned.
+
+As machine learning has become commonplace, people who are not experts are bound to stumble onto small or large issues.
+A researcher or enthusiast using machine learning models in a high level language will only see what the developers of the model promise.
+What researchers and enthusiasts won't see is the chain of libraries and APIs from hardware instructions to the functions they use.
+Despite the large chain of middlemen most programs work as advertised, but there are still caveats to a lot of high-level languages. 
+While creating a program these days have become relatively simple, it is by no means easy to create general programs which fully utilize the hardware they run on.
 
 Optimizing and decreasing the execution time would mean the researchers would be be able to maybe execute the code several times a day and experiment more with the code.
 All but the preprocessing parts of the scripts were translated to Python.
@@ -238,8 +247,9 @@ The preprocessing scripts were avoided as no equivalent library existed and the 
 The translated code was optimized and parallelized in two different frameworks, one which used local hardware and kept track of execution, timestamps and source code, another which used a cluster to speed up the code as much as possible with hardware.
 The cluster implementation saw an increase of 200 times after optimization.
 
-Instead of 48 hours the was completed in 15 minutes.
+Instead of \SI{48}{\hour} the code was completed in \SI{15}{\minute} with a Cloud solution see \cref{TotTime}.
 Such drastic improvement in BCI computations in general could open up BCI for the public making everyday life easier.
+The fastest results were \SI{12}{\minute} using a single large server processor see \cref{Acc:NumPy1Thread}.
 
 The project also illustrates the massive speedup with simple tools, which could be taught.
 
@@ -251,9 +261,11 @@ BCI could potentially allow a user to control an exoskeleton, a remote robot, ga
 BCI could possibly be used to monitor a persons mental health or how media such as music is perceived in the brain.
 At the Psychology department at Lund university they are extensively researching brain data and trying to understand how the human mind works.
 One experiment sought to classify between three different categories, objects, landmarks and faces.
+
 In order to classify between the three different categories they used SVMs with a linear kernel and a one-versus-rest strategy for multi-classification.
 The machine learning pipeline as well as the data preprocessing was written in MATLAB with no parallelization in mind.
 While no manual parallelization was made originally, matrix operations in MATLAB are made to use available threads out of the box and the majority of the program were matrix operations.
+
 The data collected took days or even weeks to process in the coded pipeline.
 The long exececution time was of course hindering the researchers in being efficient or experimental with their code as every time they executed it, they would have to wait for a week.
 Even if the original code wasn't written with parallelization in mind, it exhibited a large amount of potential parallelization.
@@ -286,11 +298,13 @@ The two frameworks were a cluster framework called Ray and a framework which use
 
 No external modules made in faster languages were to be made for faster execution in Python, likewise it was deemed unecessary to compile the Python code for faster execution.
 The preprocessing code in MATLAB was not a priority and it was decided to leave it as a in-depth problem to optimize and decrease execution time.
-No further between MATLAB and the Python scripts were in the scope.
+No extensive integration between the MATLAB preprocessing scripts and the Python scripts were in the scope.
 
 %Several independent sources have created different frameworks for doing parallel computing with both large datasets and machine learning in mind, Dask and Ray being two such frameworks.
 
 \subsection{Outline}
+
+
 
 \section{Program Workflow}
 
@@ -715,6 +729,8 @@ The standard deviation of the total execution time was calculated by adding each
 \subsection{Rewriting MATLAB}
 
 Upon retrieval of the MATLAB code it was executed to confirm it was intact and doing what it was intended for. 
+The Execution of the MATLAB code served as a benchmark for comparison later on.
+The number of iterations in \texttt{Do13} was decreased from five hundred to a hundred to decrease the execution time in testing and during development of the Python code.
 After execution, the code was read thoroughly to understand how it was constructed and what was happening.
 The MATLAB code was profiled to have an overview of performance and potential bottlenecks.
 The first profile would serve as a baseline for the project.
@@ -835,6 +851,10 @@ The same fix used in Ray to instruct the BLAS libraries to use one thread was ap
 The Ray fix was not implemented for the Single thread implementations as MATLAB also utilized multithreading for some linear algebra operations.
 The Single thread implementations were however tested with BLAS only using 1 thread and the results shown in \cref{AppendixSeperateTimes} are clear, the native BLAS libraries in NumPy are bottlenecking the code.
 
+Two runs on two different machines were done with the Accelerator implementation, one with NumPy using all threads and one with NumPy only using one thread for a total of four runs.
+The results from the four runs are shown in \cref{Acc:NumPy1Thread}.
+The runs were done to find out if NumPy might be bottlenecking the code, after it was found out NumPy was trying to use more threads than were available in a multi-threaded environment.
+
 \subsection{Profiling and Measuring}
 
 The final results were generated on 4 VCPUs @ \SI{2.6}{\giga\hertz} and \SI{8}{\giga\byte} memory computing nodes in Ericsson's cloud, with the exceptions of two of the single thread tests.
@@ -903,7 +923,25 @@ The tests were performed with a 100 permutations in \texttt{Do13TestClassifier\_
 With 500 permutations the runtime will converge more towards the comparative speedup of \texttt{Do13TestClassifier\_ShuffledLabels} which is 9 times faster with the Python single thread implementation.
 
 %Seperate Table over speedup compared to original MATLAB script?
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|l|l|l|l|}
+    \hline
+    \SI[parse-numbers=false]{\#}{(\minute)} & Total & Do11  & Do12  & Do13  \\ \hline
+    Xeon all Threads                        & 98.2  & 16.2  & 0.85  & 81.1  \\ \hline
+    Xeon 1 Thread                           & 34.7  & 16.3  & 0.21  & 18.2  \\ \hline
+    EPYC all Threads                        & 64.9  & 5.6   & 0.6   & 58.7  \\ \hline
+    EPYC 1 Thread                           & 12.0  & 5.9   & 0.2   & 5.9   \\ \hline
+    \end{tabular}
+    
+    \caption{Table of the executions times for two different machines with NumPy either using 1 or all threads.
+    Xeon @ \SI{3.07}{\giga\hertz} with 12 cores and \SI{192}{\giga\byte} RAM. EPYC @ \SI{3.35}{\giga\hertz} with 32 cores and \SI{512}{\giga\hertz}.}
+    \label{Acc:NumPy1Thread}
+\end{table}
 
+\cref{Acc:NumPy1Thread} shows the test results of running the Accelerator implementation with NumPy only using one thread and with NumPy using all threads, its clear that it is bottlenecking the code.
+With more than three times the execution time when NumPy is using all threads, something might be wrong with how NumPy is currently implemented.
+The two machines used were an Intel Xeon processor @ \SI{3.07}{\giga\hertz}, 12 cores, \SI{192}{\giga\byte} RAM and an AMD EPYC processor @ \SI{3.35}{\giga\hertz}, 32 cores, \SI{512}{\giga\hertz}.
 
 \begin{figure}[H]
     \centering
@@ -972,9 +1010,13 @@ Anyone can develop and publish the Python code, while MATLAB is both excluded to
 
 \section{Conclusion and Discussion}
 
+\subsection{profiling}
+
 The project has demonstrated the importance of using profiling to find problematic slow running code for improving runtime performance.
 After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs. 
 The 200 time speedup also does not account for the difference in performance for the given hardware, with the resulst indicating that the VCPUs perform worse individually compared to the test PC.
+
+\subsection{NumPy}
 
 An interesting aspect which was revealed at the end of the project was the fact that a common library such as NumPy was using multiple threads, even in a parallel environment.
 What is more is that the results have not proved but would indicate that the parallelization made in NumPy could be slowing down programs.
@@ -983,15 +1025,30 @@ What the slower execution time of parallel NumPy does show is the necessity of p
 
 Python contain so many moving parts it is impossible to say what implementation will run faster before testing them, what is usually fastest might be slower due to obscure small things in how they are implemented and used.
 
+\subsection{Python vs. MATLAB}
+
 The project has demonstrated the validity of using Python for science projects and the possibility of translating most MATLAB code to Python.
 I do however not recommend translating MATLAB code, I would instead suggest to rewrite the program from scratch with the idea of how it is supposed to work.
 The project has highlighted that there are differences even if the vast majority of functions in MATLAB are supported in Python.
 Even if most MATLAB functions are supported in Python there are still and will always be libraries with differences, making it almost impossible to achieve identical results.
 
+\subsection{Parallelization}
+
 The project has exposed and showcased the usefulness of utilizing all cores in hardware and the potential speedup of single-thread code.
 While not all code exhibit potential parallelism, it can decrease the execution time tremendously if exposing and parallelizing code which does exhibit parallelism.
 
 The code could probably see further speedup with a more in-depth analysis of the optimal way to execute it in Ray and by compiling the code.
+
+\subsection{Cloud vs. Local}
+
+The results from \cref{TotTime,Acc:NumPy1Thread} have shown that Cloud solutions might not always be fastest.
+However I believe that there are many improvements that can be made in both the Ray and Accelerator solutions to optimize the executions times.
+Further work on improving the Ray and Accelerator implementations could perhaps show Ray as being faster.
+
+When the results from both Ray and the Accelerator are on the same order of magnitude it opens the question of what would be optimal for the researchers.
+Purchasing a PC with a Xeon or EPYC processor might not be an economically viable option meaning the renting of a cloud might actually still be preferable.
+The Accelerator does have the advantage of maintaining and keeping track of executed code as well as the speedup of skipping already executed code.
+It is in the end a discussion the researchers at Lund will have to take themselves.
 
 %Communication overhead? Could be very real since it is probably too divided now
 %Unecessary filtration of features with zscore? or faster filtration
