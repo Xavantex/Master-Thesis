@@ -146,7 +146,7 @@
         \LARGE
         \vspace{1cm}
        
-        \textbf{Lowe Erickson}
+        \textbf{Xavante Erickson}
  
         \vfill
         
@@ -254,14 +254,18 @@ The fastest results were \SI{12}{\minute} using a single large server processor 
 The project also illustrates the massive speedup with simple tools, which could be taught.
 
 
-\subsection{Background information}
+\subsection{Background Information}
+
+\subsubsection{Brain Computer Interface}
 
 Brain Computer Interface is a field of research that has captured the interest of many industries for which there are potential applications.
 BCI could potentially allow a user to control an exoskeleton, a remote robot, games, software or as an extra input in controls for machinery~\cite{10.3389/fnins.2010.00198}.
 BCI could possibly be used to monitor a persons mental health or how media such as music is perceived in the brain.
 At the Psychology department at Lund university they are extensively researching brain data and trying to understand how the human mind works.
-One experiment sought to classify between three different categories, objects, landmarks and faces.
 
+\subsubsection{Motivation}
+
+One BCI experiment sought to classify between three different categories, objects, landmarks and faces.
 In order to classify between the three different categories they used SVMs with a linear kernel and a one-versus-rest strategy for multi-classification.
 The machine learning pipeline as well as the data preprocessing was written in MATLAB with no parallelization in mind.
 While no manual parallelization was made originally, matrix operations in MATLAB are made to use available threads out of the box and the majority of the program were matrix operations.
@@ -271,6 +275,8 @@ The long exececution time was of course hindering the researchers in being effic
 Even if the original code wasn't written with parallelization in mind, it exhibited a large amount of potential parallelization.
 It was proposed to decrease the computational time of the code by looking to the clouds.
 If the code was to be rewritten for a cluster or cloud environment, the computional time could be decreased to perhaps hours or even minutes instead of days.
+
+\subsubsection{Project Interests}
 
 With many parties involved there are different interests in this project.
 The end users, the researchers at Lund want to be able to quickly produce results to use in their research, while maintaining an ease of use.
@@ -301,10 +307,6 @@ The preprocessing code in MATLAB was not a priority and it was decided to leave 
 No extensive integration between the MATLAB preprocessing scripts and the Python scripts were in the scope.
 
 %Several independent sources have created different frameworks for doing parallel computing with both large datasets and machine learning in mind, Dask and Ray being two such frameworks.
-
-\subsection{Outline}
-
-
 
 \section{Program Workflow}
 
