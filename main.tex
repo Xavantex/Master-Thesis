@@ -149,6 +149,12 @@
     description = {I/O is short for Input/Output and refers to the input and output of an interface, could generally refer to for example keyboard strokes or data sent between programs}
 }
 
+\newglossaryentry{Profiling}
+{
+    name = profiling,
+    description = {Profiling is the collection of data and statistics from the execution of a program. Profiling can point out the memory usage or the number of times specific functions are called for example. Profiling helps point out potential problems or bottlenecks in code~\cite{enwiki:1011877534}}
+}
+
 \title{}
 \author{Lowe Erickson }
 \date{May 2018}
@@ -382,8 +388,8 @@ The encoding data was divided in the preprocessing into Amp and NonAmp parts for
 \end{itemize}
 
 Each subject was processed independently in the scripts except for in the last part in \texttt{ttest} where they had to be processed together.
-Only the NonAmp data was used for \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels}.
-
+Only the NonAmp data was used for \texttt{Do12TestClassifier} and \\\texttt{Do13TestClassifier\_ShuffledLabels}.
+\texttt{Do11TrainClassifier}, \\\texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} can henceforth be referenced as \texttt{Do11}, \texttt{Do12} and \texttt{Do13} respectively, for simplicity. 
 
 \begin{figure}[H]
     \centering
@@ -521,7 +527,7 @@ Not all the rules from Langtangen have been listed in \cref{guidelines}, the few
     
     The speedup from vectorization in NumPy comes from it using precompiled code in C to do the computations, avoiding the overhead from Python~\cite{Numpy:Fast}.
     The problem of explicit loops being slow in Python stems from the fact that Python is an interpreted language.
-    In a compiled language an interpreter doesn't have to interpret each line of code for every iteration of an explicit loop.
+    In a compiled language an interpreter does not have to interpret each line of code for every iteration of an explicit loop.
     Just by avoiding interpretation a compiled language has a significant speedup compared to Python because it has to interpret the code.
     A compiler can use other techniques such as loop unrolling to avoid unnecessary instructions or load times~\cite{wiki:LoopUnroll}.
     A compiler is able to notice patterns in loops to better optimize the code structure for the hardware, without changing the final results.
@@ -590,7 +596,7 @@ This project however assumed the overhead to be negligible in comparison to exec
 \subsubsection{File Saving}
 
 %add something about different ways of saving due to it being a problem in this project.
-Multiple ways of saving Python data was explored during the project due to \texttt{savemat} from the scipy.io library bottlenecking the code, which is discussed in \cref{MATPYConv}.
+Multiple ways of saving Python data was explored during the project due to \texttt{savemat} from the SciPy.IO library bottlenecking the code, which is discussed in \cref{MATPYConv}.
 
 
 There were multiple ways of saving files, all with different advantages and disadvantages.
@@ -650,9 +656,9 @@ It is in general advised to use \texttt{if} statements since Boolean expressions
 
 \texttt{for} loops in Python are usually very slow because each iteration is reinterpreted since Python does not compile the code.
 Something which could speed up loops in Python are for example \texttt{map}, \texttt{filter} or list comprehensions~\cite{Py:map, Py:filter, Py:listComprehension}. 
-For all these functions the expressions are interpreted once and then computed for the whole loop, theoretically saving several iterations of interpretations for the same code.
+For \texttt{map}, \texttt{filter} and list comprehensions the expressions are interpreted once and then computed for the whole loop, theoretically saving several iterations of interpretations for the same code.
 There does not seem to be a definitive answer to what is faster between ordinary loops, map, filter or list comprehensions though.
-In the end when it comes to Python one must follow profiling to see what is fastest for everything.
+In the end when it comes to Python one must follow profiling for everything to see what is fastest.
 
 %Should I have code here with the critical part of the code?
 \subsubsection{Lookups}
@@ -700,41 +706,43 @@ Seemingly identical libraries are implemented differently, in different language
 
 \subsection{Code Parallelization}
 
-Parallelization refer to the conversion of sequential code to utilize multiple processors or vector instructions to execute multiple instructions in parallel.
-Classically CPUs execute instructions in order one after the other, however with the introduction of multiple cores in computers instructions which are otherwise independent can be executed in parallel.
-Parallelization does not always have a straight forward solution and so code often has to be manually parallelized.
-With code often being implemented sequentially first, parallel code have often been converted and thus parallelized.
+Parallelization refers to the conversion of sequential code to utilize multiple processors or vector instructions to execute multiple instructions in parallel.
+Classically, CPUs execute instructions in order one after the other, however with the introduction of multiple cores in computers, instructions which are independent could be executed in parallel.
+Parallelization does not always have a straight forward solution and code often has to be manually parallelized.
+Parallel code is often implemented sequentially first and then converted to be parallel, in other words parallelized.
+%With code often being implemented sequentially first, parallel code have often been converted and thus parallelized.
 
 Even if a problem is parallelizable it is not always the best course of action to use a cluster if there are no reasons to do so.
-The execution time of having to distribute a problem to the entire cluster has to outweigh the original execution time.
-Because the CPU is extremely fast the communication overhead from distributing work to other cores often makes a program slower than running everything on the same CPU.
+The execution time of having to distribute a problem to an entire cluster has to outweigh the original execution time.
+Because CPUs are extremely fast the communication overhead from distributing work to other CPUs often makes a program slower than running everything on the same CPU.
 There's even a small communication overhead in parallelizing problems on the same CPU, it is however not usually something one has to consider.
-Because of the communication overhead not all independent layers of the code were parallelized, another reason was to avoid unnecessary complexity since the potential performance gains were deemed negligible compared to the readability.
+%Because of the communication overhead, not all independent layers of the code were parallelized.
+%Another reason was to avoid unnecessary complexity since the potential performance gains were deemed negligible compared to the readability.
 
-The strategy used to parallelize was quite straightforward. 
-The code processed 18 independent subjects, the data from each subject was then partitioned into several independent datasets with for-loops and trained models on each of the independent partitioned datasets. 
-Because the subjects and the partitioned datasets were independent they could be processed in parallel instead of sequentially, making it the obvious part of the code to parallelize.
-The framework called Ray was used to parallize the code. 
+%Detta skall nog vara i metoden
+%The strategy used to parallelize was quite straightforward. 
+%The code processed 18 independent subjects, the data from each subject was then partitioned into several independent %datasets with for-loops and trained models on each of the independent partitioned datasets. 
+%Because the subjects and the partitioned datasets were independent they could be processed in parallel instead of sequentially, making it the obvious part of the code to parallelize.
+%The framework called Ray was used to parallize the code. 
 
-With Ray's abstraction of objects and no real dependency between large blocks in the code, a large advantage with Ray emerged as \texttt{.get} could in practice be delayed until the end.
-With no need to retrieve intermediate results the full potential of Ray emerged, filling all cores in the cluster with work for the duration of the scripts.
-When delaying the get function the Ray scheduler can schedule things as computer resources are freed up and required data is available.
-Ray doesn't need to return unnecessary intermediate data, instead it returns a remote object, a promise of a future which Ray can use as if it was the object itself when sending to another remote function.
-Ray's abstraction of objects creates a more distributed execution of the code and utilizes all of the available hardware.
+%With Ray's abstraction of objects and no real dependency between large blocks in the code, a large advantage with Ray emerged as \texttt{.get} could in practice be delayed until the end.
+%With no need to retrieve intermediate results the full potential of Ray emerged, filling all cores in the cluster with work for the duration of the scripts.
+%When delaying the get function, the Ray scheduler can schedule things as computer resources are freed up and required data is available.
+%Ray does not need to return unnecessary intermediate data, instead it returns a remote object, a promise of a future which Ray can use as if it was the object itself when sending to another remote function.
+%Ray's abstraction of objects creates a more distributed execution of the code and utilizes all of the available hardware.
 
-After the first layer of parallelization for the independent subjects was implemented, further work on parallelizing the partitioned datasets proved more problematic.
+\subsubsection{Ray}\label{RayNesting}
+
+After the first layer of parallelization was implemented, further work on multiple layers of parallelization proved more problematic.
 While Ray excels at large parallelization there still exists problems with nesting remote functions. As such, workarounds had to be made to solve the problems.
-The biggest problem with Ray was when a remote function called the \texttt{.get} function it signalled the Ray scheduler that it was no longer using hardware resources, potentially scheduling more functions than there were hardware or memory.
-The known problem with nested functions led to a small redesign from the original code after a long time of experimental implementations. 
-Ultimately it was possible to avoid the larger issues with multiple layers of parallelization, instead of nesting the remote calls they were made shallow so only a single layer of remote calls were made.
-By having a single layer of remote calls the nesting problem was removed and flipped on its head, instead scheduling the smallest part of parallelization without doing any slow work on the main thread. 
+The biggest with nesting remote functions in Ray is when the \texttt{.get} method is called it signals to the Ray scheduler that it is no longer using hardware resources.
+If \texttt{.get} is used within a remote function Ray will see it is no longer using resources and execute the next scheduled function, thus potentially executing more functions than there is CPU cores or memory.
 Even if there are ways of avoiding nesting remote calls, the unnecessary workarounds could lead to degradation and hopefully the Ray developer team fixes this feature. 
-In the end a fast and working solution was implemented without any noticeable difference in the end results.
 
 \subsubsection{Amdahl's Law}
 
-Amdahl's law states that the bottleneck of parallelizing a program will always be the serial part of the code, in \cref{Amdahl} $S_{latency}(s)$ is the total speedup of a program after parallelizing, p is the fraction of the whole program which is parallelizable and s is the speedup of the parallelizable part of the program.
-The implication of Amdahl's law is that if 80\% of a program is parallelizable, the program can at most be cut down to 20\% of the original execution time given an infinite amount of cores due to the 20\% which must be done serially.
+Amdahl's law states that the bottleneck of parallelizing a program will always be the serial part of the code, in \cref{Amdahl} $S_{latency}(s)$ is the total speedup of a program after parallelizing, $p$ is the fraction of the whole program which is parallelizable and $s$ is the speedup of the parallelizable part of the program.
+The implication of Amdahl's law is that if eighty percent of a program is parallelizable, the program can at most be cut down to twenty percent of the original execution time given an infinite amount of cores due to the twenty percent which must be done serially.
 
 \begin{equation}\label{Amdahl}
     S_{latency}(s) = \frac{1}{(1-p) + \frac{p}{s}}
@@ -745,28 +753,32 @@ The implication of Amdahl's law is that if 80\% of a program is parallelizable, 
 BLAS (Basic Linear Algebra Subprograms) are libraries for accelerating linear algebra operations.
 This project found that the precompiled BLAS libraries from NumPy was slowing down the code, see \cref{inPara,AppendixSeperateTimes}.
 BLAS libraries are usually compiled to use the available cores on a computer to speed up computations, since linear algebra operations are often parallel by nature.
-While in day to day programming having BLAS utilize all of the hardware is usually an extreme boost in decreasing execution time, it can bottleneck a problem which is otherwise trying to occupy all the threads.
+Having BLAS utilize all of the hardware should theoretically decrease the computational time enormously.
+However the project found that the code used in the project slowed down both in a sequential and parallel environment when BLAS was using all cores, see \cref{Acc:NumPy1Thread,AppendixSeperateTimes}.
+%While in day to day programming having BLAS utilize all of the hardware is usually an extreme boost in decreasing execution time, it can bottleneck a problem which is otherwise trying to occupy all the threads.
 
-There could potentially be many problems in fighting over hardware resources, hardware predictions becoming harder as the CPU has to switch between the different instructions.
+There could potentially be many problems in fighting over hardware resources, for example hardware predictions could be harder as the CPU has to switch between the different instructions.
 Conflicting instructions from different threads could cause a higher demand in memory.
 A higher demand in memory could lead to the CPU having to resort to a lower level in the memory hierarchy to fetch the data for computations etc. 
 There are an array of troubles which could decrease performance when fighting over hardware resources.
-These are all speculations however and no deeper analysis as to why it is the case was made, testing of wether BLAS were slowing down the code were made and are presented in \cref{AppendixSeperateTimes}.
+These are all speculations however and no deeper analysis as to why BLAS was slowing down the code was made.
+%The test results from testing if BLAS was slowing down the code are presented in \cref{AppendixSeperateTimes}.
 While there is an enormous boost to do simple vector operations in parallel, all modern CPUs have solved the main issues with vectorization operations by implementing fundamental vectorization instructions in the CPU which optimizes these operations for a single core~\cite{enwiki:avx}.
 
 \subsection{Error Estimation and Computations}
 
-The speedup factor when scaling up from 1 machine in Ray was calculated by dividing the execution time of using 1 machine in Ray with the execution time of using n number of machines, where n is between 1 and 25 machines.
-The speedup equation can be seen in \cref{speedupFac}, $f_{speedup}$ is the relative speedup compared to using 1 machine, $t_1$ is the mean execution time of using 1 machine in Ray and $t_n$ is the mean execution time of using n machines.
+The speedup factor when scaling up from one machine in Ray was calculated by dividing the execution time of using one machine in Ray with the execution time of using $n$ number of machines, where $n$ is between one and twenty five machines.
+The speedup equation can be seen in \cref{speedupFac}, $f_{speedup}$ is the relative speedup compared to using one machine, $t_1$ is the mean execution time of using one machine in Ray and $t_n$ is the mean execution time of using $n$ machines.
 
 \begin{equation}\label{speedupFac}
     f_{speedup} = \frac{t_1}{t_n}
 \end{equation}
 
 Standard deviation and mean of the time measurements were calculated using NumPy's std and mean functions.
-All measurements were assumed to be independent and because cProfile does not specify the time resolution, no time resolution for the time measurements were included in the calculations.
+All measurements were assumed to be independent.
+Because cProfile does not specify the time resolution, no time resolution for the time measurements were included in the calculations.
 
-Since the measurements were assumed to be independent, the speedup factor of Ray compared to 1 machine used simple propagation of uncertainty seen in \cref{stdProp,ErrorProp} to compute the relative error.
+Since the measurements were assumed to be independent, the speedup factor of Ray compared to one machine used propagation of uncertainty seen in \cref{stdProp,ErrorProp} to compute the relative error.
 
 \begin{equation}\label{stdProp}
     s_f = \sqrt{\left(\frac{\partial f}{\partial x}\right)^2s_x^2 + \left(\frac{\partial f}{\partial y}\right)^2s_y^2 + \cdots}
@@ -774,25 +786,24 @@ Since the measurements were assumed to be independent, the speedup factor of Ray
 
 \begin{equation}\label{ErrorProp}
     \begin{aligned}
-        s_{speedup} &=  \sqrt{\left(\frac{\partial f_{speedup}}{\partial t_1}\right)s_1^2 + \left(\frac{\partial f_{speedup}}{\partial t_n}\right)s_2^2} \\
-        s_{speedup} &= \sqrt{\left(\frac{1}{t_n}\right)^2s_1^2 + \left(\frac{-t_1}{t_2^2}\right)^2s_2^2}\\
+        s_{speedup} &=  \sqrt{\left(\frac{\partial f_{speedup}}{\partial t_1}\right)s_1^2 + \left(\frac{\partial f_{speedup}}{\partial t_n}\right)s_n^2} \\
+        s_{speedup} &= \sqrt{\left(\frac{1}{t_n}\right)^2s_1^2 + \left(\frac{-t_1}{t_n^2}\right)^2s_n^2}\\
         s_{speedup} &= \sqrt{\frac{s_{1}^2t_n^2 + s_{n}^2t_1^2}{t_n^4}}
     \end{aligned}
 \end{equation}
 
-Assuming variables are independent the equation for propagation of uncertainty is as seen in \cref{stdProp}.
+Assuming variables are independent, the equation for propagation of uncertainty is as seen in \cref{stdProp}.
 Using \cref{stdProp} the propagation of uncertainty for \cref{speedupFac} is as shown in \cref{ErrorProp}.
-$s_{speedup}$ in \cref{ErrorProp} is the standard deviation of the speedup factor, $s_1$ and $s_n$ are the standard deviations of the execution times for using 1 machine and n machines respectively.
+$s_{speedup}$ in \cref{ErrorProp} is the standard deviation of the speedup factor, $s_1$ and $s_n$ are the standard deviations of the execution times for using one machine and n machines respectively.
 
 The total execution time of non Ray implementations were calculated by adding each individual script's mean execution time.
-The standard deviation of the total execution time was calculated by adding each individual scripts standard deviation following the standard way of calculating propagation of uncertainty.
+The standard deviation of the total execution time was calculated by adding each individual scripts standard deviation, following the standard way of calculating propagation of uncertainty.
 
 \section{Methodology}
 
 \subsection{Rewriting MATLAB}
 
-Upon retrieval of the MATLAB code it was executed to confirm it was intact and doing what it was intended for. 
-The Execution of the MATLAB code served as a benchmark for comparison later on.
+Upon retrieval of the MATLAB code it was executed to ensure it was working as intended.
 The number of iterations in \texttt{Do13} was decreased from five hundred to a hundred to decrease the execution time in testing and during development of the Python code.
 After execution, the code was read thoroughly to understand how it was constructed and what was happening.
 The MATLAB code was profiled to have an overview of performance and potential bottlenecks.
@@ -802,58 +813,64 @@ Since all of the main scripts were mostly written using the native \texttt{eval}
 \texttt{eval} is a built in function in MATLAB which evaluate string values as MATLAB expressions~\cite{mat:eval}.
 There are many reasons to avoid \texttt{eval} and while it allows for some interesting interactions it is safer, faster and easier to read code which do not use eval.
 MATLAB usually compiles code the first time it is run but it is not possible with \texttt{eval}.
-It is also not safe, \texttt{eval} could for example unexpectedly overwrite variables with new values and reading code which isn't properly color coded because they are strings is harder~\cite{matEval}.
+\texttt{eval} is not safe, it could for example unexpectedly overwrite variables with new values~\cite{matEval}.
+Since \texttt{eval} evaluates string values, the arguments will be monochromatic because they are string values.
+Reading code which is not properly color coded and instead monochromatic, decreases the readability significantly.
 
 The removal of the \texttt{eval} functions increased readability, and made later translation to Python easier. With no \texttt{eval} operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
 Removing \texttt{eval} also allowed for basic parallelization in MATLAB, using the \texttt{parfor} function from the Parallel Computing Toolbox in MATLAB.
 The parallelization of the preprocessing code of MATLAB was very briefly explored and quickly left as an in-depth problem for future work.
 Removing \texttt{eval} and parallelizing the preprocessing scripts with \texttt{parfor} in MATLAB seemed to show a significant speed up.
 The parallelized preprocessing scripts were unfortunately never confirmed to work as intended before leaving it for future work.
-Apart from assuring the parallelized preprocessing scripts were working as intended, the parallelization of the preprocessing scripts were outside the scope and focus of the project so the results were left out.
+%Apart from assuring the parallelized preprocessing scripts were working as intended, the parallelization of the preprocessing scripts were outside the scope and focus of the project so the results were left out.
 %Unecessary sentence no?down below
 %\texttt{eval} makes any potential compilation impossible since it is not explicit, it can utilize dynamic variables for example.
 
 The largest overhead after implementing \texttt{parfor} was the loading of large data. 
-MATLAB was able to avoid the large time penalty of loading from disk with most of the major scripts.
-Even with a significant improvement in performance when using \texttt{parfor}, it did not scale well with the number of threads used.
+MATLAB was able to avoid the large time penalty of loading from disk for most of the preprocessing scripts.
+Despite a significant improvement in performance when using \texttt{parfor}, it did not scale well with the number of threads used.
 In the end however the focus of the project was not to optimize the MATLAB code but rather the Python implementation.
 
 
 \subsection{MATLAB to Python Translation}\label{MATPYConv}
 
-The execution time of the preprocessing scripts were significantly less than the training of the classifiers and generation of data. 
-The necessary literature and theory behind understanding the preprocessing scripts in order to fully translate those scripts was deemed not to be of focus for this project.
-FieldTrip, the preprocessing library used in MATLAB and its equivalent in Python, MNE are not implemented nor process data the same way.
-To translate the preprocessing script in MATLAB would have required an in-depth knowledge of both libraries and a considerate amount of development time.
+The execution time of the preprocessing scripts were significantly less than the training of the classifiers and permutation of data. 
+The necessary literature and theory behind understanding the preprocessing scripts in order to fully translate them was deemed not to be of focus for this project.
+FieldTrip, the EEG processing library used in the MATLAB preprocessing scripts and its counterpart in Python, MNE, are not implemented nor process data the same way.
+To translate the preprocessing scripts would have required an in-depth knowledge of both EEG processing libraries and a considerate amount of development time.
 Because of the low execution time and lack of knowledge it was decided the preprocessing scripts were not to be translated to Python.
 
-Apart from the preprocessing scripts the MATLAB code was first translated line by line to Python, as close to the original code in MATLAB as possible.
-The data from the MATLAB preprocessing scripts were loaded using the scipy.io module, which supports loading files in .mat format.
-The majority of things were a matter of reading documentation between the equivalent functions in Python and MATLAB.
+Apart from the preprocessing scripts, the MATLAB code was first translated line by line to Python, as close to the original code in MATLAB as possible.
+The data from the MATLAB preprocessing scripts were loaded using the SciPy.IO module, which supports loading .mat files.
+For the majority, the translation was a matter of reading documentation between the equivalent functions in Python and MATLAB.
 
 Implementing an identical training for Python's SVM proved difficult.
-Because MATLAB doesn't explicitly show how they implement SVM, it is hard to tell what the differences were between MATLABs implementation of SVM and Python's.
-While a part of the number of settings were the same for MATLAB and Python's implementation of SVM, it seems that the difference lies with how the respective error functions are written.
-Python's scikit-learn package does allow someone to write their own error function, however MATLAB's documentation is not clear on exactly how its default settings actually calculate their error. %This might be more of constraints issue, from BoxConstraint Try and elaborate on the ERROR, find sources
+Because MATLAB does not explicitly show how they implement SVM, it is hard to tell what the differences were between MATLAB's implementation of SVM and Python's.
+While some of the settings were the same for MATLAB and Python's implementation of SVM, it seems that the difference lies with how the respective error functions are written.
+Python's scikit-learn package does allow someone to write their own error function, however it is no clear from MATLAB's documentation how the default error is calculated. %This might be more of constraints issue, from BoxConstraint Try and elaborate on the ERROR, find sources
+
+\subsubsection{Python Slower Than MATLAB}
 
 After implementing a working SVM in the Python code a profile was made of the code using the cProfile module.
 After profiling the Python code with the cProfile module, it was found to be three times slower than the MATLAB counterpart.
-The reason to why the Python code was three times slower was found to be scipy.io's built-in \texttt{savemat} function, which took more than 69\% of the computational time.
-Because the files were not saved in version 7.3 and above, it could be the old way of compressing the .mat files that were creating the large overhead but it wasn't likely as the original MATLAB files didn't use 7.3 and above either.
-Since the issue of saving in .mat format doesn't exist in the MATLAB scripts the problem in Python could be a multitude of potential causes.
-One potential cause could be because MATLAB already stores the data in .mat format in memory and it was the the conversion of the datastructures from Python to .mat format causing the overhead.
-Because the total amount of data being saved is somewhat large (>50 GB), it could be how the function was implemented in Python being slower for larger data structures or nested structures. 
-Seeing as to how the overhead is quite massive it was probably due to a mix of things making \texttt{savemat} inefficient in this project.
+The reason why the Python code was three times slower was found to be SciPy.IO's built-in \texttt{savemat} function, which took more than sixty nine percent of the computational time.
+The large overhead from savemat could be because it did not save as version 7.3 and above, which compresses the data first.
+The compression was however quickly disregarded as the original MATLAB code did not use 7.3 and above either.
+Since the issue of saving in .mat format did not exist in the MATLAB scripts the problem in Python could have been a multitude of potential causes.
+One potential cause could have been because MATLAB already stores the data in .mat format in memory, it was the conversion of the datastructures from Python to .mat format which caused the overhead.
+Because the total amount of data saved was somewhat large (>50 GB), it could be SciPy.IO's \texttt{savemat} is slower than MATLAB's native saving which was exacerbated by the large data. 
+As the overhead was quite massive it was probably due to a mix of things, which made \texttt{savemat} inefficient in this project.
 
 There were however a few ways to improve the execution time if theoretically keeping the .mat format was important.
-An example of improving \texttt{savemat} in Python would be to use the compression option.
-A thing which could improve \texttt{savemat} would be to use HDF5 format which versions of MATLAB above 7.3 uses. 
-HDF5 is built to be a fast way of storing large amounts of data.
-HDF5 was never implemented though since it was not necessary to save in .mat format, instead the \texttt{savemat} problem was solved by using the Python module pickle to save files.
+An example of improving \texttt{savemat} in Python could be to use the compression option.
+A thing which could improve \texttt{savemat} could be to use HDF5 format option, which MATLAB versions above 7.3 uses~\cite{Mat73HDF5}.
+HDF5 is built to be a fast way of storing large amounts of data~\cite{WhatIsHDF5}.
+HDF5 was never implemented though since it was not necessary to save in .mat format.
+Instead of using \texttt{savemat}, files were saved using the Python module pickle.
 After switching to pickle to save the files, the time consumed saving files dropped to a fraction of the execution time for the Python scripts.
 Switching to pickle decreased the computational time for the \texttt{Do11TrainClassifier} script to half of the MATLAB counterpart. %%Shuffle away this to Python side
 
-Of course the problem of saving in .mat format was not already a problem in the MATLAB scripts, but rather something introduced in the conversion to Python and thus something which shouldn't have been there in the first place.
+Of course the problem of saving in .mat format was not a problem in the MATLAB scripts, but rather something introduced in the conversion to Python and thus something which should not have been there in the first place.
 
 \subsection{Optimization of Python}
 The first steps in optimizing after removing \texttt{savemat} was profiling the code again using cProfile.
@@ -866,21 +883,21 @@ Due to the highly nested and long \texttt{for} loops in the original code, small
 \subsubsection{The \texttt{any} Function}\label{metodAny}
 
 Profiling of the scripts showed that a specific \texttt{if-else} was taking ten percent of the execution time.
-It was revealed that the reason behind the ten percent overhead from the \texttt{if} statement was due to its condition using the \texttt{.any} function in NumPy, for a NumPy array.
-So it wasn't the \texttt{if-else} statement itself but rather the \texttt{.any} function determining if the condition was true or false.
+It was revealed that the reason behind the ten percent overhead from the \texttt{if} statement was due to its condition, using the \texttt{.any} function in NumPy for a NumPy array.
+So it was not the \texttt{if-else} statement itself but rather the \texttt{.any} function determining if the condition was true or false.
 The \texttt{.any} function can be extremely slow because it has to look through an entire list or determine if the list exists before determining the result.
 
 The \texttt{if-else} were replaced with \texttt{try-except} and after profiling the code again the ten percent overhead was gone.
-This was a rare occurrence where profiling revealed \texttt{if-else} to be slowing down the code.
+This was a rare occurrence where profiling revealed that \texttt{if-else} was slowing down the code.
 
 \subsubsection{The \texttt{in1d} Function}
 
-Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \\\texttt{Do13TestClassifier\_ShuffledLabels} was using 81\% of the time in \texttt{in1d}.
-The script \texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements for a list which mapped sensor names to values, over 200 times.
+Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \\\texttt{Do13} was using eighty one percent of the time in \texttt{in1d}.
+The script \texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements in a list which mapped sensor names to its index, over two hundred times.
 Linear searches like \texttt{in1d} are generally avoided because of the linear growth and it is advisable to find faster solutions if possible.
 \texttt{in1d} was removed and replaced with a hashmap which used each sensor name as the key and each index corresponding to the sensor name as the value.
 With each index mapped to its element as the key, each lookup became fast and constant.
-The execution time previously dominated by \texttt{in1d} in \texttt{Do13TestClassifier\_ShuffledLabels} with 81\%, saw the equivalent part drop to less than a percent when using a hashmap.
+The execution time previously dominated by \texttt{in1d} in \texttt{Do13} with eighty one percent, dropped to less than a percent when using a hashmap.
 
 \subsubsection{Other Optimizations}
 
@@ -905,11 +922,21 @@ To create a more persistent storage of data between creation and deletion of clu
 Both preprocessed and intermediate data was saved in the openstack object storage to collect all data in a central and easily accessed location.
 With openstack's object storage Ray could save data remotely without knowing where the master node was.
 
+\subsubsection{Ray}
+
 With Ray the process to transition the code to use the cluster resources over a local network was fast, simply adding a \texttt{@ray.remote} decorator for the function which was to be computed in the cluster.
 A first layer of parallelization over the independent subjects were created using Ray's remote functions.
 Since there is no dependency in processing the subjects this was a perfect first place to start parallelizing, assuming the computational time for each subject was around the same time so that it wouldn't create a bottleneck.
 The first problem with only parallelizing over the number of subjects was that number of subjects were 18 and the number of available cores to use within the cluster was 20, thus new implementations needed to be more scalable.
 Because the first layer of parallelization saw a dramatic decrease in execution time, the original execution time of a few days compared to the new execution time under an hour led to questioning the communication overhead.
+
+First a more scalable solution with nested functions was created, it was quickly discovered to be problems with nesting remote functions, see \cref{RayNesting}.
+The known problem with nested functions led to a small redesign from the original code after a long time of experimental implementations. 
+Ultimately, it was possible to avoid the larger issues with multiple layers of parallelization, instead of nesting the remote calls they were made shallow so only a single layer of remote calls were made.
+By having a single layer of remote calls the nesting problem was removed and flipped on its head, instead scheduling the smallest part of parallelization without doing any slow work on the main thread.
+In the end a fast and working solution was implemented without any noticeable difference in the end results.
+
+\subsubsection{Communication Overhead}
 
 The purely serial parts of the program are well below a few minutes and the time limit of the entire program seems to be around 15 minutes as it stands, see \cref{TotTime}.
 The hard 15 minute limit is probably due to multiple reasons, the excessive saving of intermediate files makes one immediately question the data rate of the openstack object store as each extra core adds another connection which wants to upload data. 
@@ -1060,7 +1087,7 @@ Python and MATLAB have many things in common but the main difference is the targ
 Both Python and MATLAB support compilation to speed up code, Python does however have several different implementations of compilers which all focuses on different things.
 
 When it comes to an interpreted language the main issue with speed is that it has to interpret the code at runtime, so it has to read, translate to machine code and execute.
-Ignoring the extra overhead from interpreting a program at runtime, compilers also often optimizes things the developer either doesn't know could be optimized or more often is too lazy to optimize manually.
+Ignoring the extra overhead from interpreting a program at runtime, compilers also often optimizes things the developer either does not know could be optimized or more often is too lazy to optimize manually.
 Compilers can often put the CPU to work in areas of the code where it is idle, it can use caching without explicit use for faster access and performance, reorganize load operations to avoid waiting for the harddrive etc. 
 While Python does have many different compilers, the amount of modules in Python are massive and the main problem is that compilers might not support them all.
 MATLAB as a proprietary product have an advantage over Python in compiling code as it owns most libraries itself.
@@ -1143,7 +1170,7 @@ It is in the end a discussion the researchers at Lund will have to take themselv
 There are still things which could be improved, I suspect that at the moment a big reason for the 15 minute hard limit for the Ray implementation might be due to the high scalability of the current code.
 The very smallest parallel code block is surprisingly fast to execute and the need to distribute them faster and faster might be what's limiting Ray in utilizing the given hardware to its full potential, bottlenecking in the scheduling.
 
-A suggestion would be to try and divide the code into larger chunks, so that the process takes longer and Ray doesn't need to schedule as many processes.
+A suggestion would be to try and divide the code into larger chunks, so that the process takes longer and Ray does not need to schedule as many processes.
 Profiling of the optimal division of chunks would have to be made to see what runs fastest overall, or an in-depth analysis of the optimal number of chunks for the given number of threads.
 
 A problem with the current Ray implementation is the lack of logging and keeping track of what and when something has been executed.
