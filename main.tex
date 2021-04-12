@@ -807,20 +807,21 @@ Upon retrieval of the MATLAB code it was executed to ensure it was working as in
 The number of iterations in \texttt{Do13} was decreased from five hundred to a hundred to decrease the execution time in testing and during development of the Python code.
 After execution, the code was read thoroughly to understand how it was constructed and what was happening.
 The MATLAB code was profiled to have an overview of performance and potential bottlenecks.
-The first profile would serve as a baseline for the project.
+The first profile served as a baseline for the project.
 
 Since all of the main scripts were mostly written using the native \texttt{eval} function from MATLAB, they were first translated to basic code.
 \texttt{eval} is a built in function in MATLAB which evaluate string values as MATLAB expressions~\cite{mat:eval}.
-There are many reasons to avoid \texttt{eval} and while it allows for some interesting interactions it is safer, faster and easier to read code which do not use eval.
-MATLAB usually compiles code the first time it is run but it is not possible with \texttt{eval}.
-\texttt{eval} is not safe, it could for example unexpectedly overwrite variables with new values~\cite{matEval}.
-Since \texttt{eval} evaluates string values, the arguments will be monochromatic because they are string values.
+There were many reasons to avoid \texttt{eval} and while it allowed for some interesting interactions it was safer, faster and easier to read code which did not use eval.
+MATLAB usually compiles code the first time it is run but this was not possible with \texttt{eval}.
+\texttt{eval} was not safe, it could for example unexpectedly overwrite variables with new values~\cite{matEval}.
+Since \texttt{eval} evaluates string values, the arguments were monochromatic because they were string values.
 Reading code which is not properly color coded and instead monochromatic, decreases the readability significantly.
 
-The removal of the \texttt{eval} functions increased readability, and made later translation to Python easier. With no \texttt{eval} operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
+The removal of the \texttt{eval} functions increased readability, and made later translation to Python easier.
+With no \texttt{eval} operations the syntax was color coded and much more distinguishable when jumping between MATLAB and Python code.
 Removing \texttt{eval} also allowed for basic parallelization in MATLAB, using the \texttt{parfor} function from the Parallel Computing Toolbox in MATLAB.
 The parallelization of the preprocessing code of MATLAB was very briefly explored and quickly left as an in-depth problem for future work.
-Removing \texttt{eval} and parallelizing the preprocessing scripts with \texttt{parfor} in MATLAB seemed to show a significant speed up.
+Removal of \texttt{eval} and parallelization of the preprocessing scripts with \texttt{parfor} in MATLAB seemed to show a significant speed up.
 The parallelized preprocessing scripts were unfortunately never confirmed to work as intended before leaving it for future work.
 %Apart from assuring the parallelized preprocessing scripts were working as intended, the parallelization of the preprocessing scripts were outside the scope and focus of the project so the results were left out.
 %Unecessary sentence no?down below
@@ -841,7 +842,7 @@ To translate the preprocessing scripts would have required an in-depth knowledge
 Because of the low execution time and lack of knowledge it was decided the preprocessing scripts were not to be translated to Python.
 
 Apart from the preprocessing scripts, the MATLAB code was first translated line by line to Python, as close to the original code in MATLAB as possible.
-The data from the MATLAB preprocessing scripts were loaded using the SciPy.IO module, which supports loading .mat files.
+The data from the MATLAB preprocessing scripts were loaded using the SciPy.IO module, which supported loading .mat files.
 For the majority, the translation was a matter of reading documentation between the equivalent functions in Python and MATLAB.
 
 Implementing an identical training for Python's SVM proved difficult.
@@ -868,7 +869,7 @@ HDF5 is built to be a fast way of storing large amounts of data~\cite{WhatIsHDF5
 HDF5 was never implemented though since it was not necessary to save in .mat format.
 Instead of using \texttt{savemat}, files were saved using the Python module pickle.
 After switching to pickle to save the files, the time consumed saving files dropped to a fraction of the execution time for the Python scripts.
-Switching to pickle decreased the computational time for the \texttt{Do11TrainClassifier} script to half of the MATLAB counterpart. %%Shuffle away this to Python side
+Switching to pickle decreased the computational time for the \texttt{Do11} script to half of the MATLAB counterpart. %%Shuffle away this to Python side
 
 Of course the problem of saving in .mat format was not a problem in the MATLAB scripts, but rather something introduced in the conversion to Python and thus something which should not have been there in the first place.
 
@@ -903,7 +904,7 @@ The execution time previously dominated by \texttt{in1d} in \texttt{Do13} with e
 
 Most other significant improvements were made by finding NumPy functions which replaced parts of the code, to bring down the level where it was computed.
 Switching the implementation used to train the SVMs from sklearn.SVC to sklearn.LinearSVC saw a large performance improvement.
-libSVM uses another lower level library compared to SVC and is potentially faster for problems with a larger set of features~\cite{LinearSVC,SVMSVC}.
+LinearSVC uses another lower level library compared to SVC and is potentially faster for problems with a larger set of features~\cite{LinearSVC,SVMSVC}.
 
 \subsection{Why Ray}
 
@@ -914,19 +915,18 @@ The scientists at Lund University could potentially learn Ray with relative ease
 With Ray being relatively new and having high support for different machine learning libraries to distribute the workload, it seemed both an exciting and good choice in the beginning of the project~\cite{ray:RaySGD, ray:Rayrllib, ray:RayTune, ray:RaySklearn}. 
 
 \subsection{Transition to Parallel Code}
-After translation of the original MATLAB code the Python code was
-rewritten into a single script.
+After translation of the original MATLAB code the Python code was rewritten into a single script.
 With the transition into a single script, intermediate loading of files saved from previous scripts could be removed which in turn decreased the execution time a small bit.
 
 To create a more persistent storage of data between creation and deletion of clusters the OpenStack object storage on Ericsson's cloud was used.
 Both preprocessed and intermediate data was saved in the OpenStack object storage, to collect all data in a central and easily accessed location.
-With OpenStack's object storage Ray could save data remotely without knowing where the master node was.
+With OpenStack's object storage, Ray could save data remotely without knowing where the master node was.
 
 \subsubsection{Ray}
 
 With Ray the process to transition the code to use the cluster resources over a local network was fast, and done by adding a \texttt{@ray.remote} decorator for the function which was to be computed in the cluster.
 A first layer of parallelization over the independent subjects were created using Ray's remote function.
-Since there is no dependency in processing the subjects this was a perfect first place to start parallelizing, assuming the computational time for each subject was about the same so that it would not create a bottleneck.
+Since there was no dependency in processing the subjects this was a perfect first place to start parallelizing, assuming the computational time for each subject was about the same so that it would not create a bottleneck.
 The problem with only parallelizing over the number of subjects was that there were only eighteen subjects and the number of available cores within the cluster was twenty, thus new implementations needed to be more scalable.
 %Because there were only eighteen subjects and at the time there were twenty cores available, further work for a more scalable implementation had to be done.
 Because the first layer of parallelization saw a dramatic decrease in execution time, the original execution time of a few days compared to the new execution time under an hour led to questioning the communication overhead.
@@ -934,14 +934,14 @@ Because the first layer of parallelization saw a dramatic decrease in execution 
 First a more scalable solution with nested functions was created, it was quickly discovered to be problems with nesting remote functions, see \cref{RayNesting}.
 The known problem with nested functions led to a small redesign from the original code after a long time of experimental implementations. 
 Ultimately, it was possible to avoid the larger issues with multiple layers of parallelization, instead of nesting the remote calls they were made shallow so only a single layer of remote calls were made.
-By having a single layer of remote calls the nesting problem was removed and flipped on its head, instead scheduling the smallest part of parallelization without doing any slow work on the main thread.
+By having a single layer of remote calls the nesting problem was removed and flipped on its head, instead scheduling the smallest part of parallelization without any slow work done on the main thread.
 In the end a fast and working solution was implemented without any noticeable difference in the end results.
 
 \subsubsection{Communication Overhead}
 
-The purely serial parts of the program were well below a few minutes and the time limit of the Ray implementation seems to be around fifteen minutes, see \cref{TotTime}.
-The hard fifteen minute limit is probably due to multiple reasons.
-The excessive saving of intermediate files in the Ray implementation makes one question the data rate of the OpenStack object store, as each extra core added another connection which wanted to upload data. 
+The purely serial parts of the program were well below a few minutes and the time limit of the Ray implementation seemed to be around fifteen minutes, see \cref{TotTime}.
+The hard fifteen minute limit was probably due to multiple reasons.
+The excessive saving of intermediate files in the Ray implementation made one question the data rate of the OpenStack object store, as each extra core added another connection which wanted to upload data. 
 The communication overhead of having to scale the work for more cores and the data rate of sending data between nodes could have been potential bottlenecks.
 Finally Amdahl's law assumes a parallelizable part of a program always benefits from more cores, which is not true for most programs.
 Parallel programs are usually only parallelizable to the extent in which there is a smallest part of a program which must be done serially.
@@ -961,7 +961,7 @@ This was not a problem in Ray because the Ray development team has noted this pr
 Ray's development solved the problem with BLAS during runtime, by changing the environment variable for the most common BLAS libraries to specifically use one thread~\cite{ray:OMPNUMTHREAD}. 
 The same fix used in Ray to instruct the BLAS libraries to use one thread was applied to the Accelerator.
 The Ray fix was not implemented for the single thread implementations as MATLAB also utilized multithreading for some linear algebra operations.
-The Single thread implementations were however tested with BLAS only using one thread and the results shown in \cref{AppendixSeperateTimes} are clear, the native BLAS libraries in NumPy are bottlenecking the code.
+The Single thread implementations were however tested with BLAS only using one thread and the results shown in \cref{AppendixSeperateTimes} are clear, the native BLAS libraries in NumPy were bottlenecking the code.
 
 Two runs on two different machines were done with the Accelerator implementation, one with NumPy using all threads and one with NumPy only using one thread for a total of four runs.
 The results from the four runs are shown in \cref{Acc:NumPy1Thread}.
@@ -977,7 +977,7 @@ The single thread Python test on the computing node was also done for a fair com
 All execution times for Python were extracted using cProfile, the execution times for MATLAB were extracted using the built in Profiler.
 An exact timing and profiling for each script in Ray was not possible to achieve as the Ray implementation integrated the scripts.
 The integration of the scripts in Ray made it possible to compute parts of later scripts as soon as parts of the previous scripts finished.
-Because the scripts were integrated and due to how Ray handles scheduling there is no definitive boundary between the scripts and therefore it is only possible to specify the total execution time.
+Because the scripts were integrated and due to how Ray handles scheduling there was no definitive boundary between the scripts and therefore it was only possible to specify the total execution time.
 
 After realizing that the first twenty VCPUs originally assigned and used in this project still scaled well, another eighty VCPUs for a total of a hundred VCPUs were used. With the hundred VCPUs the scalability of the current Ray implementation could be cemented as the time converged to around fifteen minutes, see \cref{TotTime,fig:MachineXSpeedup}.
 
