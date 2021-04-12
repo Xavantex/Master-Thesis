@@ -892,8 +892,8 @@ This was a rare occurrence where profiling revealed that \texttt{if-else} was sl
 
 \subsubsection{The \texttt{in1d} Function}
 
-Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \\\texttt{Do13} was using eighty one percent of the time in \texttt{in1d}.
-The script \texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements in a list which mapped sensor names to its index, over two hundred times.
+Profiling revealed that \texttt{mvpa\_applycrossvalclassifier} in \texttt{Do13} was using eighty one percent of the time in \texttt{in1d}.
+The script \\\texttt{mvpa\_applycrossvalclassifier} used \texttt{in1d} to find the index of multiple elements in a list which mapped sensor names to its index, over two hundred times.
 Linear searches like \texttt{in1d} are generally avoided because of the linear growth and it is advisable to find faster solutions if possible.
 \texttt{in1d} was removed and replaced with a hashmap which used each sensor name as the key and each index corresponding to the sensor name as the value.
 With each index mapped to its element as the key, each lookup became fast and constant.
@@ -901,9 +901,9 @@ The execution time previously dominated by \texttt{in1d} in \texttt{Do13} with e
 
 \subsubsection{Other Optimizations}
 
-Most other larger improvements were made by finding equivalent NumPy functions used in the code, to bring down the level where it was computed.
-Switching the implementation used to train the SVMs from sklearn.SVC to sklearn.libSVM saw a large performance improvement.
-libSVM uses another lower level library compared to SVC and is faster for problems with a larger set of features.
+Most other significant improvements were made by finding NumPy functions which replaced parts of the code, to bring down the level where it was computed.
+Switching the implementation used to train the SVMs from sklearn.SVC to sklearn.LinearSVC saw a large performance improvement.
+libSVM uses another lower level library compared to SVC and is potentially faster for problems with a larger set of features~\cite{LinearSVC,SVMSVC}.
 
 \subsection{Why Ray}
 
@@ -918,16 +918,17 @@ After translation of the original MATLAB code the Python code was
 rewritten into a single script.
 With the transition into a single script, intermediate loading of files saved from previous scripts could be removed which in turn decreased the execution time a small bit.
 
-To create a more persistent storage of data between creation and deletion of clusters the openstack object storage on Ericsson's cloud was used.
-Both preprocessed and intermediate data was saved in the openstack object storage to collect all data in a central and easily accessed location.
-With openstack's object storage Ray could save data remotely without knowing where the master node was.
+To create a more persistent storage of data between creation and deletion of clusters the OpenStack object storage on Ericsson's cloud was used.
+Both preprocessed and intermediate data was saved in the OpenStack object storage, to collect all data in a central and easily accessed location.
+With OpenStack's object storage Ray could save data remotely without knowing where the master node was.
 
 \subsubsection{Ray}
 
-With Ray the process to transition the code to use the cluster resources over a local network was fast, simply adding a \texttt{@ray.remote} decorator for the function which was to be computed in the cluster.
-A first layer of parallelization over the independent subjects were created using Ray's remote functions.
-Since there is no dependency in processing the subjects this was a perfect first place to start parallelizing, assuming the computational time for each subject was around the same time so that it wouldn't create a bottleneck.
-The first problem with only parallelizing over the number of subjects was that number of subjects were 18 and the number of available cores to use within the cluster was 20, thus new implementations needed to be more scalable.
+With Ray the process to transition the code to use the cluster resources over a local network was fast, and done by adding a \texttt{@ray.remote} decorator for the function which was to be computed in the cluster.
+A first layer of parallelization over the independent subjects were created using Ray's remote function.
+Since there is no dependency in processing the subjects this was a perfect first place to start parallelizing, assuming the computational time for each subject was about the same so that it would not create a bottleneck.
+The problem with only parallelizing over the number of subjects was that there were only eighteen subjects and the number of available cores within the cluster was twenty, thus new implementations needed to be more scalable.
+%Because there were only eighteen subjects and at the time there were twenty cores available, further work for a more scalable implementation had to be done.
 Because the first layer of parallelization saw a dramatic decrease in execution time, the original execution time of a few days compared to the new execution time under an hour led to questioning the communication overhead.
 
 First a more scalable solution with nested functions was created, it was quickly discovered to be problems with nesting remote functions, see \cref{RayNesting}.
@@ -938,26 +939,29 @@ In the end a fast and working solution was implemented without any noticeable di
 
 \subsubsection{Communication Overhead}
 
-The purely serial parts of the program are well below a few minutes and the time limit of the entire program seems to be around 15 minutes as it stands, see \cref{TotTime}.
-The hard 15 minute limit is probably due to multiple reasons, the excessive saving of intermediate files makes one immediately question the data rate of the openstack object store as each extra core adds another connection which wants to upload data. 
-The communication overhead of having to scale the work for more cores as well as the data rate of sending data in between nodes could be a potential bottleneck.
-Finally Amdahl's law also assumes a parallizable part of a program always benefits from more cores, which is also not true for most programs.
-Parallelizable programs are usually only parallel to the extent in which there are a smallest part of a program which must still be done serially.
-Because nothing can benefit from an infinite amount of cores, it must be noted that smallest component which can be executed in parallel in the scripts could be a factor for the 15 minute limit.
+The purely serial parts of the program were well below a few minutes and the time limit of the Ray implementation seems to be around fifteen minutes, see \cref{TotTime}.
+The hard fifteen minute limit is probably due to multiple reasons.
+The excessive saving of intermediate files in the Ray implementation makes one question the data rate of the OpenStack object store, as each extra core added another connection which wanted to upload data. 
+The communication overhead of having to scale the work for more cores and the data rate of sending data between nodes could have been potential bottlenecks.
+Finally Amdahl's law assumes a parallelizable part of a program always benefits from more cores, which is not true for most programs.
+Parallel programs are usually only parallelizable to the extent in which there is a smallest part of a program which must be done serially.
+With other words a program cannot be chopped up into infinite many parts, there will parts which need to be done one after the other.
+It could have been the smallest part of the code in the Ray implementation was a factor to the fifteen minute limit.
 
 \subsection{Inherent Parallelization}\label{inPara}
 
-After implementing the accelerator distributing the problem locally on one machine using all its threads, it was found using Linux's top command that the seperate threads were trying to use more than the assigned thread.
+After implementing the Accelerator distributing the problem locally on one machine using all its threads, it was found using Linux's top command that the seperate threads were trying to use more than the assigned thread.
 After researching the problem it was found that NumPy was the culprit.
-Even though Numpy itself is not multithreaded, it is built on top of precompiled BLAS (Basic Linear Algebra Subprograms) libraries and don't control how the BLAS libraries use the hardware available~\cite{Numpy:OpenBLAS}.
+Even though Numpy itself is not multithreaded, it is built on top of precompiled BLAS (Basic Linear Algebra Subprograms) libraries and do not control how the BLAS libraries use the hardware available~\cite{Numpy:OpenBLAS}.
 Most BLAS libraries are compiled to utilize as many cores as possible as most operations are extremely parallelizable, NumPy itself come with a precompiled library which uses available cores.
 Because NumPy uses multiple threads by default it does not take into account the rare case when someone actually wants to manually parallelize a problem. 
 BLAS libraries and NumPy are not aware if they are in a multi-threaded environment or not and has to be manually set to use only one thread~\cite{OpenBLAS:threadSafe}.
 
-The problem was not found to exist in Ray and the reason is because the Ray development team has noted this problem and solved it during runtime by changing the environment variable for the most common BLAS libraries to specifically use one thread~\cite{ray:OMPNUMTHREAD}. 
+This was not a problem in Ray because the Ray development team has noted this problem and solved it temporarily until NumPy's development team fixes it.
+Ray's development solved the problem with BLAS during runtime, by changing the environment variable for the most common BLAS libraries to specifically use one thread~\cite{ray:OMPNUMTHREAD}. 
 The same fix used in Ray to instruct the BLAS libraries to use one thread was applied to the Accelerator.
-The Ray fix was not implemented for the Single thread implementations as MATLAB also utilized multithreading for some linear algebra operations.
-The Single thread implementations were however tested with BLAS only using 1 thread and the results shown in \cref{AppendixSeperateTimes} are clear, the native BLAS libraries in NumPy are bottlenecking the code.
+The Ray fix was not implemented for the single thread implementations as MATLAB also utilized multithreading for some linear algebra operations.
+The Single thread implementations were however tested with BLAS only using one thread and the results shown in \cref{AppendixSeperateTimes} are clear, the native BLAS libraries in NumPy are bottlenecking the code.
 
 Two runs on two different machines were done with the Accelerator implementation, one with NumPy using all threads and one with NumPy only using one thread for a total of four runs.
 The results from the four runs are shown in \cref{Acc:NumPy1Thread}.
@@ -966,25 +970,29 @@ The runs were done to find out if NumPy might be bottlenecking the code, after i
 \subsection{Profiling and Measuring}
 
 The final results were generated on 4 VCPUs @ \SI{2.6}{\giga\hertz} and \SI{8}{\giga\byte} memory computing nodes in Ericsson's cloud, with the exceptions of two of the single thread tests.
-A comparative single thread test between MATLAB and Python was executed on my personal PC with 8 @ \SI{3.40}{\giga\hertz} logical cores and \SI{36}{\giga\byte} memory, due to memory and license limitations. 
-A single thread test for Python was executed on one of the computing nodes to show they were in the same order of magnitude as the test on my personal PC, and for a fair comparison between MATLAB and Python.
+A comparative single thread test between MATLAB and Python was executed on my personal PC with 8 logical cores @ \SI{3.40}{\giga\hertz} and \SI{36}{\giga\byte} memory, due to memory and license limitations. 
+A single thread test for Python was executed on one of the computing nodes to show they were in the same order of magnitude as the test on my personal PC.
+The single thread Python test on the computing node was also done for a fair comparison between MATLAB and Python.
 
 All execution times for Python were extracted using cProfile, the execution times for MATLAB were extracted using the built in Profiler.
-An exact timing and profiling for each script in Ray was not possible to achieve as the Ray implementation integrated the scripts, making it possible for Ray to compute parts of later scripts as soon as parts of the previous scripts finish.
+An exact timing and profiling for each script in Ray was not possible to achieve as the Ray implementation integrated the scripts.
+The integration of the scripts in Ray made it possible to compute parts of later scripts as soon as parts of the previous scripts finished.
 Because the scripts were integrated and due to how Ray handles scheduling there is no definitive boundary between the scripts and therefore it is only possible to specify the total execution time.
 
-After realizing that the first 20 VCPUs originally assigned and used in this project still scaled well, another 80 VCPUs for a total of 100 VCPUs were used. With the 100 VCPUs the scalability of the current Ray implementation could be cemented as the time converged to around \SI{15}{\minute}, see \cref{TotTime} and \cref{fig:MachineXSpeedup}.
+After realizing that the first twenty VCPUs originally assigned and used in this project still scaled well, another eighty VCPUs for a total of a hundred VCPUs were used. With the hundred VCPUs the scalability of the current Ray implementation could be cemented as the time converged to around fifteen minutes, see \cref{TotTime,fig:MachineXSpeedup}.
 
 \section{Results}
 
-The final results are presented in the following table for comparison.
-The execution times for Ray do not include the time it takes to set up the cluster nodes or start the Ray cluster, it is only the execution time for the Python script.
+The final results are presented in \cref{TotTime,AppendixSeperateTimes} for comparison.
+The execution times for Ray do not include the time it takes to set up the cluster nodes or start the Ray cluster.
+The results only present the execution times of the Python and MATLAB scripts.
 There are multiple ways of managing and setting up a Ray cluster some of which are almost instantaneous, and others which are slower. 
 %\texttt{Do11TrainClassifier}, \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} in \cref{TotTime} are N/A for the Ray implementation as they are integrated without being able to specify an exact boundary between the scripts.
 
 %Table over execution times for single, thread, accelerator, and Ray implementation
 \begin{table}[H]
     \centering
+    \caption{Table of the total execution times for the translated and converted scripts as well as the total comparative speedup factor between the implementations, with 1 Thread (MATLAB) as the default speed.}
     \begin{tabular}{|l|l|l|}
     \hline
     \#                 & \SI[parse-numbers=false]{Total}{(\minute)}        & \SI[parse-numbers=false]{Speedup}{(AU)}       \\ \hline
@@ -1003,14 +1011,13 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     Ray 20 Nodes       & 15.70$\pm$0.61     & 218.29$\pm$36.06 \\ \hline
     Ray 25 Nodes       & 15.83$\pm$0.79     & 216.47$\pm$35.84 \\ \hline
     \end{tabular}
-
-    \caption{Table of the total execution times for the translated and converted scripts as well as the total comparative speedup factor between the implementations, with 1 Thread (MATLAB) as the default speed.}
     \label{TotTime}
 \end{table}
 
 
 \begin{table}[H]
 \centering
+    \caption{Table of the separate execution times for the MATLAB, Python and Accelerator scripts.}
     \begin{tabular}{|l|l|l|l|}
     \hline
     \SI[parse-numbers=false]{\#}{(\minute)}    & Do11             & Do12           & Do13               \\ \hline
@@ -1020,15 +1027,15 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     True 1 Thread (Py) & 313.55$\pm$35.05 & 3.49$\pm$0.39  & 291.44$\pm$24.82   \\ \hline
     Ax 4 slices        & 60.99$\pm$9.10   & 0.81$\pm$0.15  & 59.96$\pm$9.62     \\ \hline
     \end{tabular}
-    
-    \caption{Table of the separate execution times for the MATLAB, Python and Accelerator scripts.}
     \label{AppendixSeperateTimes}
 \end{table}
 
 
-Since the MATLAB scripts were run on a different machine than the Python implementations, the Python 1 Thread implementation was run on both the machine everything else was run on and the same machine as the MATLAB script, for comparison.
-The tests were performed with a 100 permutations in \texttt{Do13TestClassifier\_ShuffledLabels} although the researchers at Lund University used 500 permutations in their research.
-With 500 permutations the runtime will converge more towards the comparative speedup of \texttt{Do13TestClassifier\_ShuffledLabels} which is 9 times faster with the Python single thread implementation.
+Since the MATLAB scripts were run on a different machine than the Python implementations, the single thread Python implementation was run on both the machine everything else was run on and the same machine as the MATLAB script, for comparison.
+The tests were performed with a hundred permutations in \texttt{Do13TestClassifier\_ShuffledLabels} although the researchers at Lund University used five hundred permutations in their research.
+With five hundred permutations the execution time will converge more towards the comparative speedup of \texttt{Do13}.
+To put the comparative speedup factor of \texttt{Do13} into context, it is around twenty seven times faster and \texttt{Do11} is around three times faster in the single thread Python implementation, see \cref{AppendixSeperateTimes}.
+
 
 %Seperate Table over speedup compared to original MATLAB script?
 \begin{table}[H]
@@ -1042,36 +1049,32 @@ With 500 permutations the runtime will converge more towards the comparative spe
     EPYC 1 Thread                           & 12.0  & 5.9   & 0.2   & 5.9   \\ \hline
     \end{tabular}
     
-    \caption{Table of the executions times for two different machines with NumPy either using 1 or all threads.
+    \caption{Table of the executions times for two different machines with NumPy either using one or all threads.
     Xeon @ \SI{3.07}{\giga\hertz} with 12 cores and \SI{192}{\giga\byte} RAM. EPYC @ \SI{3.35}{\giga\hertz} with 32 cores and \SI{512}{\giga\hertz}.}
     \label{Acc:NumPy1Thread}
 \end{table}
 
-\cref{Acc:NumPy1Thread} shows the test results of running the Accelerator implementation with NumPy only using one thread and with NumPy using all threads, its clear that it is bottlenecking the code.
-With more than three times the execution time when NumPy is using all threads, something might be wrong with how NumPy is currently implemented.
-The two machines used were an Intel Xeon processor @ \SI{3.07}{\giga\hertz}, 12 cores, \SI{192}{\giga\byte} RAM and an AMD EPYC processor @ \SI{3.35}{\giga\hertz}, 32 cores, \SI{512}{\giga\hertz}.
+\cref{Acc:NumPy1Thread} shows the test results of running the Accelerator implementation with NumPy only using one thread and with NumPy using all threads, it is clear that it is bottlenecking the code.
+NumPy's execution time is three times faster if it is limited to use one thread.
+The two machines used in \cref{Acc:NumPy1Thread} were an Intel Xeon processor 12 cores @ \SI{3.07}{\giga\hertz}, \SI{192}{\giga\byte} RAM and an AMD EPYC processor 32 cores @ \SI{3.35}{\giga\hertz}, \SI{512}{\giga\hertz}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth, ]{pictures/MachinesXSpeedupWhite.png}
-    \caption{The speedup of the Ray implementation when using 1 to 25 machines with 4 VCPUs/Cores, relative to using 1 machine.}
+    \caption{The speedup of the Ray implementation with a ninety five percent confidence interval when using one to twenty five machines with \SI{4}{VCPUs/Cores}, relative to using one machine.}
     \label{fig:MachineXSpeedup}
 \end{figure}
 
 \cref{fig:MachineXSpeedup} shows the relative speedup of the Ray implementation depending on the number of machines used.
 All machines used in the results for \cref{fig:MachineXSpeedup} have 4 VCPUs @ \SI{2.6}{\giga\hertz} and \SI{8}{\giga\byte} memory assigned.
-For example with 5 machines the speedup factor is around 6 times faster than using 1 machine, this odd when first faced with it.
-The first things that come to mind why the speedup is larger than the number of machines added is that not only CPUs are added but also memory, allowing for more things to be stored in memory means faster access to begin computing.
-Beside the workload the master node also hosts the global control store or GCS~\cite{ray:rayCluster, ray:GCS, ray:Architecture}, something which could be a slowdown when using 1 machine compared to using multiple machines.
-There could be a problem with using Ray on only 1 machine, it is primarily built for a cluster environment and not meant to be used for a single CPU other than for debugging and development.
-While the performance gain does decrease with each machine the gain is still quite impressive considering the communication overhead, which can be attributed to the massively parallel problem and almost no serial part in the code.
-While Amdahl's law of speedup does not theoretically affect this problem there are issues of the extra overhead with Ray when adding more and more compute nodes, the necessity of keeping everything synchronized and the data transfer of the object store.
-The valleys for the speedup factor at around 12 and 21 machines could be due to the time they were executed, naturally if the scripts are executed during the day the cloud at Ericsson will be at a higher load which could lead to a slowdown.
+It is odd that between two and nine machine the speedup is larger than the number of machines, for example for five machines the speedup is six times faster.
+The speedup is probably larger than the number of machines because of the services Ray run in the background on the cluster.
+See \cref{RaySpeedup} for a deeper discussion of \cref{fig:MachineXSpeedup}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth, ]{pictures/CoresXTimeMinutesWhite.png}
-    \caption{The execution time of the Ray implementation when using 1 to 25 machines with 4 VCPUs/Cores.}
+    \caption{The execution time of the Ray implementation with a ninety five percent confidence interval when using one to twenty five machines with \SI{4}{VCPUs/Cores}.}
     \label{fig:CoresXTime}
 \end{figure}
 
@@ -1118,20 +1121,22 @@ Anyone can develop and publish the Python code, while MATLAB is both excluded to
 
 \section{Conclusion and Discussion}
 
-\subsection{profiling}
+\subsection{Profiling}
 
 The project has demonstrated the importance of using profiling to find problematic slow running code for improving runtime performance.
 After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs. 
-The 200 time speedup also does not account for the difference in performance for the given hardware, with the resulst indicating that the VCPUs perform worse individually compared to the test PC.
+The 200 time speedup does not account for the difference in performance for the given hardware, with the results indicating that the VCPUs perform worse individually compared to the test PC.
 
 \subsection{NumPy}
 
 An interesting aspect which was revealed at the end of the project was the fact that a common library such as NumPy was using multiple threads, even in a parallel environment.
-What is more is that the results have not proved but would indicate that the parallelization made in NumPy could be slowing down programs.
-The slower execution time for parallel NumPy could be due to being assigned different machines in the cloud for the execution, the time of execution etc.
+The results in this project indicate that the parallelization made in NumPy could be slowing down programs.
+Parallel NumPy could maybe be slower due to fighting over resources or communication overhead.
+The slower execution time for parallel NumPy could be an array of things and I dare not speculate too much. 
 What the slower execution time of parallel NumPy does show is the necessity of profiling and measuring when Python code is meant to be fast.
 
-Python contain so many moving parts it is impossible to say what implementation will run faster before testing them, what is usually fastest might be slower due to obscure small things in how they are implemented and used.
+Python contain so many moving parts, it is impossible to say what implementation will run faster before testing them.
+What is usually fastest in Python might be slower due to obscure small things in how they are implemented and used.
 
 \subsection{Python vs. MATLAB}
 
@@ -1143,18 +1148,31 @@ Even if most MATLAB functions are supported in Python there are still and will a
 \subsection{Parallelization}
 
 The project has exposed and showcased the usefulness of utilizing all cores in hardware and the potential speedup of single-thread code.
-While not all code exhibit potential parallelism, it can decrease the execution time tremendously if exposing and parallelizing code which does exhibit parallelism.
+While not all code exhibit potential parallelism, it can decrease the execution time tremendously when it is possible to parallelize code which exhibits parallelism.
 
 The code could probably see further speedup with a more in-depth analysis of the optimal way to execute it in Ray and by compiling the code.
+
+\subsubsection{Speedup of Ray}\label{RaySpeedup}
+
+The speedup factor in \cref{fig:MachineXSpeedup} is higher than the number of machines for one to ten machines, which is odd.
+For example with five machines the speedup factor is around six times faster than using one machine.
+The speedup could be larger than the number of machines because of the extra memory added with each node.
+More memory means faster access to data, which could speed up computations.
+Beside the workload, the master node also hosts the global control store or GCS~\cite{ray:rayCluster,ray:GCS, ray:Architecture}.
+The GCS could slow down Ray when using one machine compared to using multiple machines.
+There could be a problem with using Ray on only one machine, it is primarily built for a cluster environment and not meant to be used for a single CPU other than for debugging and development.
+While the performance gain does decrease with each machine the gain is still quite impressive considering the communication overhead, which can be attributed to the massively parallel problem and almost no serial part in the code.
+While Amdahl's law of speedup does not theoretically affect this problem there are issues of the extra overhead with Ray when adding more and more compute nodes, the necessity of keeping everything synchronized and the data transfer of the object store.
+The valleys for the speedup factor at around twelve and twenty one machines could be due to the time they were executed, naturally if the scripts are executed during the day the cloud at Ericsson will be at a higher load which could lead to a slowdown.
 
 \subsection{Cloud vs. Local}
 
 The results from \cref{TotTime,Acc:NumPy1Thread} have shown that Cloud solutions might not always be fastest.
-However I believe that there are many improvements that can be made in both the Ray and Accelerator solutions to optimize the executions times.
+However I believe that there are many improvements that can be made in both the Ray and Accelerator implementations to optimize the execution times.
 Further work on improving the Ray and Accelerator implementations could perhaps show Ray as being faster.
 
 When the results from both Ray and the Accelerator are on the same order of magnitude it opens the question of what would be optimal for the researchers.
-Purchasing a PC with a Xeon or EPYC processor might not be an economically viable option meaning the renting of a cloud might actually still be preferable.
+Purchasing a PC with a Xeon or EPYC processor might not be an economically viable option, meaning the renting of a cloud might actually still be preferable.
 The Accelerator does have the advantage of maintaining and keeping track of executed code as well as the speedup of skipping already executed code.
 It is in the end a discussion the researchers at Lund will have to take themselves.
 
@@ -1167,30 +1185,34 @@ It is in the end a discussion the researchers at Lund will have to take themselv
 
 \section{Outlook}
 
-There are still things which could be improved, I suspect that at the moment a big reason for the 15 minute hard limit for the Ray implementation might be due to the high scalability of the current code.
-The very smallest parallel code block is surprisingly fast to execute and the need to distribute them faster and faster might be what's limiting Ray in utilizing the given hardware to its full potential, bottlenecking in the scheduling.
+There are still things which could be improved.
+I suspect that at the moment a big reason for the fifteen minute hard limit for the Ray implementation might be due to the high scalability of the current code.
+The very smallest parallel code block in the Ray implementation is surprisingly fast to execute.
+When the Ray implementation have a growing number of cores and fast small functions, the speed of distributing tasks become increasingly important.
+It could be the distribution of small tasks is limiting Ray to utilize the hardware fully.
 
-A suggestion would be to try and divide the code into larger chunks, so that the process takes longer and Ray does not need to schedule as many processes.
+A suggestion would be to try and divide the code into larger chunks which takes a longer time to execute.
+Larger chunks would eliminate some of the communication overhead and Ray would not need to schedule as many tasks.
+Too large chunks could however lose too much of the parallelism and bottleneck the code that way instead.
 Profiling of the optimal division of chunks would have to be made to see what runs fastest overall, or an in-depth analysis of the optimal number of chunks for the given number of threads.
 
 A problem with the current Ray implementation is the lack of logging and keeping track of what and when something has been executed.
-While Ray lack logs the Accelerator lack the scalability of Ray, a future solution could be to have the accelerator keep track of what has been executed and when and using Ray handle the execution.
-Some problems would be how to handle setup and remote execution of the code, setup of the cluster would probably have to integrated and executed through the accelerator.
+While Ray lack logs the Accelerator lack the scalability of Ray, a future solution could be to have the Accelerator keep track of what and when something has been executed and use Ray to handle the execution.
+Some problems would be how to handle setup and remote execution of the code.
+The setup of the cluster would probably have to be integrated and executed through the Accelerator.
 
 The advantages are of course the handling of dependencies, possible speedup from skipping unnecessary unchanged parts in the code and the speedup/scalability of Ray.
 
-There is the possibility of developing a custom or another general framework for Ray to track dependencies and accelerating computations, since the parallel parts of the Accelerator wouldn't be used it could be faster.
+There is the possibility of developing a custom or another general framework for Ray to track dependencies and accelerating computations.
+Because unnecessary features from the Accelerator could be left out from this general framework, it could be faster than integrating Ray and the Accelerator.
 
 The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all unnecessary loading from disk.
 It would not change the end result just integrating the scripts more and getting rid of all the intermediate loading of files.
-A fast way to further optimize the MATLAB could be to create checkpoints to only execute code which have been changed, similiar to the Accelerator used in one Python implementation.
-The MATLAB code could be tested on octave to integrate it with the Python scripts and finally move it to the Ray cluster for the maximal speedup.
+Similiar to the Accelerator an optimization in the MATLAB code could be to create checkpoints which only executes changed code.
+The MATLAB code could be tested on octave to integrate it with the Python scripts and run it with Ray for a parallel execution.
 
 \bibliographystyle{vancouver}
 \bibliography{reference}
-
-
-\newpage 
 
 \begin{appendices}
 
@@ -1238,10 +1260,10 @@ The MATLAB code could be tested on octave to integrate it with the Python script
 \end{table}
 
 
-\section{Python}
+\section{Source Code Repository}
 
 %Replace below FOR GITHUB Link or reference to source code or alternative
-
+\url{https://gitlab.datahub.erdc.ericsson.net/Erickson/masterthesiseeganalysis}
 
 \end{appendices}
 
