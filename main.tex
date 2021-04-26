@@ -1,5 +1,5 @@
 \documentclass[12pt, a4paper]{article}
-\usepackage[english]{babel}
+\usepackage[swedish,english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{courier}
@@ -47,9 +47,9 @@
 
 % * <xavante.erickson@gmail.com
 
-\newglossaryentry{Numpy}
+\newglossaryentry{NumPy}
 {
-    name=Numpy,
+    name=NumPy,
     description={A Python module for fast large vectorization management and computations using available BLAS libraries}
 }
 
@@ -118,7 +118,7 @@
     name={
         \begin{tabular}{@{}l}    % use @{} to suppress the space                
             Cluster computing\\ 
-            framework
+            framework\\[-2.5ex]
         \end{tabular} 
     },
     sort= Cluster computing framework,
@@ -228,7 +228,7 @@ The other parallel implementation was made using the Accelerator, a framework to
 After translation, the code was tested versus the original results and profiled for any key mistakes, for example functions which took unnecessarily long time to execute.
 After optimisation the single thread script was twelve times faster than the original MATLAB script.
 
-The final execution times were around \SI[parse-numbers=false]{12-15}{\minute}, compared to the benchmark of \SI{48}{\hour} it is about 200 times faster.
+The final execution times were around \SI[parse-numbers=false]{12-15}{minutes}, compared to the benchmark of \SI{48}{hours} it is about 200 times faster.
 The benchmark of the original code used less iterations than the researchers used, decreasing the computational time from a week to \SI{48}{\hour}.
 
 The results of the project highlight the importance of learning and teaching basic profiling of slow code.
@@ -238,7 +238,39 @@ Future work should perhaps include doing a deeper complexity analysis on both a 
 Future work could also dive deeper into the code of NumPy, as the current code relies heavily on NumPy and has shown to be a bottleneck in this project.
 
 %\newpage
+\begin{otherlanguage}{swedish}
+\section*{Populärvetenskaplig sammanfattning}
+Datorer är en central och oundviklig del av mångas vardag idag.
+De framsteg som har gjorts inom maskin-inlärning har gjort det nästintill lika viktig inom mångas vardag som datorer är.
+Med de otroliga framsteg som gjorts inom maskininlärning så har man även vänt sig till det för att försöka tolka hjärnsignaler, i hopp om att skapa BCI (Brain Computer Interface) eller hjärn dator gränssnitt.
+Forskare på Lund Universitet genomförde ett experiment där de försökte kategorisera hjärnsignaler med hjälp av maskin-inlärning.
+Forskarna försökte kategorisera mellan tre olika saker, objekt, ansikten och landmärken.
+En av de större problemen med projektet var att det tog väldigt lång tid att beräkna på en vanlig dator, runt en veckas tid.
 
+Det här projektet hade i som uppgift att försöka snabba upp beräkningstiden av forskarnas kod med hjälp av olika medel.
+Projektet översatte den kod som skulle förbättras från programmeringspråket MATLAB till Python.
+Projektet använde sig utav profilering, kluster och av ett accelereringsverktyg.
+Med hjälp av profilering kan man lokalisera delar av kod som körs långsamt och förbättra koden till att vara snabbare, ett optimeringsverktyg helt enkelt.
+Kluster är en samling av datorer som man kan använda för att kollektivt beräkna större problem med, för att öka beräkningshastigheten.
+Det här projektet använde sig utav ett ramverk kallat Ray, vilket möjliggjorde beräkningar av koden på ett kluster inom Ericsson.
+Ett accellereringsverktyg kallat the Accelerator implementerades också, separat från Ray implementationen av koden.
+The Accelerator utnyttjar endast lokala processorer för att parallelisera ett problem gentemot att använda flera datorer.
+Den största fördelen med the Accelerator är att den kan hålla reda på vad som beräknats och inte och sparar alla resultat automatiskt.
+När the Accelerator håller reda på allt så kan det återanvända gamla resultat till nya beräkningar ifall gammal kod används.
+Återanvändningen av gamla resultat betyder att man undviker beräkningstiden det skulle ta att beräkna kod man redan har beräknat.
+
+Detta projekt förbättrade beräkningshastigheten till att vara över två hundra gånger snabbare än det var innan.
+Både Ray och the Accelerator såg en förbättring på över två hundra gånger snabbare, med dem bästa resultaten från the Accelerator på runt två hundra femtio gånger snabbare.
+Det skall dock nämnas att dem bästa resultaten från the Accelerator gjordes på en bra server processor, som har högre inköpskostnad en vad en klustertjänst i molnet skulle ha.
+En förbättring på två hundra gånger kan ha stora konsekvenser, om man kan se sådan förbättring i hastighet för BCI överlag.
+Man skulle potentiellt kunna se en i mer realtid tolkning av hjärnsignaler, vilket man kunde använda till att styra apparater eller elektronik med.
+
+Resultaten i det här projektet har också visat att NumPy, ett vanligt beräknings bibliotek i Python, har saktat ned koden med de standardinställningar det kommer med.
+NumPy gjorde kod långsammare genom att använda flera trådar i processorn, även i en flertrådad miljö där manuell parallelisering hade gjorts.
+Det visade sig att NumPy var långsammare för både den fler och en trådade implementationen, vilket antyder att NumPy kan sakta ned kod generellt, något många är omedvetna om.
+Efter att manuellt fixat de miljövariabler som NumPy kommer med, så såg koden en upp till tre gånger så snabb beräkningstid än innan.
+
+\end{otherlanguage}
 
 \tableofcontents
 
@@ -333,7 +365,7 @@ The approaches were to use more hardware in a cloud solution, decreasing sequent
 
 \subsection{Scope of the Project}%report}
 
-It was decided that all old MATLAB code except for the preprocessing parts using fieldtrip would be translated to Python.
+It was decided that all old MATLAB code except for the preprocessing parts using Fieldtrip would be translated to Python.
 The preprocessing only took a few hours and the extra development time necessary to translate it was deemed unecessary. 
 The translated Python code was going to be optimized for speed to shave off as much time as possible within reasonable limit.
 The optimized Python code would then be parallelized and implemented in mainly two different frameworks.
@@ -405,7 +437,7 @@ Only the NonAmp data was used for \texttt{Do12TestClassifier} and \\\texttt{Do13
 
 \cref{fig:GeneralProgramStructure} shows \texttt{Do11TrainClassifier} being executed with \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} executed in parallel, due to both \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} only relying on the results from \texttt{mvpa\_traincrossvalclassifier} in\\
 \texttt{Do11TrainClassifier}.
-Though the Figure shows \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} being executed in parallel they were only executed in parallel in the Ray implementation and Ray does it by default given enough CPUs.
+Though the figure shows \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} being executed in parallel they were only executed in parallel in the Ray implementation and Ray does it by default given enough CPUs.
 Even if the Ray implementation computes \texttt{Do12TestClassifier} and \texttt{Do13TestClassifier\_ShuffledLabels} in parallel, \texttt{Do13TestClassifier\_ShuffledLabels} needed the results from \texttt{mvpa\_traincrossvalclassifier} for all subjects before continuing.
 The reason why \texttt{Do13TestClassifier\_ShuffledLabels} could not process each subject independently was because each t-test was performed over all subjects for each permutation.
 
@@ -579,7 +611,7 @@ The first chapter in High Performance Python go into great detail about profilin
 Besides profiling, High Performance Python shows other many different tools such as compiling and clusters to improve performance in Python.
 High Performance Python also emphasizes the importance of exhausting previously listed options in itself first, as they are usually what will lead to a higher speedup~\cite{oreillyCh10}.
 
-\subsection{Profiling and Code Optimizations in SW Engineering}
+\subsection{Code Optimizations}
 
 \subsubsection{Profiling}
 
@@ -850,7 +882,7 @@ Because MATLAB does not explicitly show how they implement SVM, it is hard to te
 While some of the settings were the same for MATLAB and Python's implementation of SVM, it seems that the difference lies with how the respective error functions are written.
 Python's scikit-learn package does allow someone to write their own error function, however it is no clear from MATLAB's documentation how the default error is calculated. %This might be more of constraints issue, from BoxConstraint Try and elaborate on the ERROR, find sources
 
-\subsubsection{Python Slower Than MATLAB}
+\subsubsection{Python Slower than MATLAB}
 
 After implementing a working SVM in the Python code a profile was made of the code using the cProfile module.
 After profiling the Python code with the cProfile module, it was found to be three times slower than the MATLAB counterpart.
@@ -867,7 +899,7 @@ An example of improving \texttt{savemat} in Python could be to use the compressi
 A thing which could improve \texttt{savemat} could be to use HDF5 format option, which MATLAB versions above 7.3 uses~\cite{Mat73HDF5}.
 HDF5 is built to be a fast way of storing large amounts of data~\cite{WhatIsHDF5}.
 HDF5 was never implemented though since it was not necessary to save in .mat format.
-Instead of using \texttt{savemat}, files were saved using the Python module pickle.
+Instead of using \texttt{savemat}, files were saved using Python's pickle format.
 After switching to pickle to save the files, the time consumed saving files dropped to a fraction of the execution time for the Python scripts.
 Switching to pickle decreased the computational time for the \texttt{Do11} script to half of the MATLAB counterpart. %%Shuffle away this to Python side
 
@@ -952,7 +984,7 @@ It could have been the smallest part of the code in the Ray implementation was a
 
 After implementing the Accelerator distributing the problem locally on one machine using all its threads, it was found using Linux's top command that the seperate threads were trying to use more than the assigned thread.
 After researching the problem it was found that NumPy was the culprit.
-Even though Numpy itself is not multithreaded, it is built on top of precompiled BLAS (Basic Linear Algebra Subprograms) libraries and do not control how the BLAS libraries use the hardware available~\cite{Numpy:OpenBLAS}.
+Even though NumPy itself is not multithreaded, it is built on top of precompiled BLAS (Basic Linear Algebra Subprograms) libraries and do not control how the BLAS libraries use the hardware available~\cite{Numpy:OpenBLAS}.
 Most BLAS libraries are compiled to utilize as many cores as possible as most operations are extremely parallelizable, NumPy itself come with a precompiled library which uses available cores.
 Because NumPy uses multiple threads by default it does not take into account the rare case when someone actually wants to manually parallelize a problem. 
 BLAS libraries and NumPy are not aware if they are in a multi-threaded environment or not and has to be manually set to use only one thread~\cite{OpenBLAS:threadSafe}.
@@ -996,19 +1028,19 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     \begin{tabular}{|l|l|l|}
     \hline
     \#                 & \SI[parse-numbers=false]{Total}{(\minute)}        & \SI[parse-numbers=false]{Speedup}{(AU)}       \\ \hline
-    1 Thread (MAT, PC) & 3426.85$\pm$550.14 & 1.0$\pm$0.23     \\ \hline
-    1 Thread (Py, PC)  & 283.63$\pm$1.51    & 12.08$\pm$1.94   \\ \hline
-    1 Thread (Py)      & 809.62$\pm$188.22  & 4.23$\pm$1.20    \\ \hline
-    True 1 Thread (Py) & 608.48$\pm$42.95   & 5.63$\pm$0.99    \\ \hline
-    Ax 4 slices        & 121.77$\pm$13.25   & 28.14$\pm$5.46   \\ \hline
-    Ray 1 Nodes        & 174.33$\pm$34.50   & 19.66$\pm$5.01   \\ \hline
-    Ray 2 Nodes        & 68.06$\pm$6.55     & 50.35$\pm$9.42   \\ \hline
-    Ray 3 Nodes        & 46.29$\pm$5.13     & 74.02$\pm$14.44  \\ \hline
-    Ray 4 Nodes        & 35.15$\pm$3.13     & 97.48$\pm$17.89  \\ \hline
-    Ray 5 Nodes        & 28.78$\pm$2.46     & 119.09$\pm$21.65 \\ \hline
-    Ray 10 Nodes       & 17.58$\pm$0.49     & 194.94$\pm$31.76 \\ \hline
-    Ray 15 Nodes       & 16.05$\pm$0.82     & 213.55$\pm$35.97 \\ \hline
-    Ray 20 Nodes       & 15.70$\pm$0.61     & 218.29$\pm$36.06 \\ \hline
+    1 Thread (MAT, PC) & 3426.85$\pm$550.14 & 1.0$\pm$0.23     \\ 
+    1 Thread (Py, PC)  & 283.63$\pm$1.51    & 12.08$\pm$1.94   \\ 
+    1 Thread (Py)      & 809.62$\pm$188.22  & 4.23$\pm$1.20    \\ 
+    True 1 Thread (Py) & 608.48$\pm$42.95   & 5.63$\pm$0.99    \\ 
+    Ax 4 slices        & 121.77$\pm$13.25   & 28.14$\pm$5.46   \\ 
+    Ray 1 Nodes        & 174.33$\pm$34.50   & 19.66$\pm$5.01   \\ 
+    Ray 2 Nodes        & 68.06$\pm$6.55     & 50.35$\pm$9.42   \\ 
+    Ray 3 Nodes        & 46.29$\pm$5.13     & 74.02$\pm$14.44  \\ 
+    Ray 4 Nodes        & 35.15$\pm$3.13     & 97.48$\pm$17.89  \\ 
+    Ray 5 Nodes        & 28.78$\pm$2.46     & 119.09$\pm$21.65 \\ 
+    Ray 10 Nodes       & 17.58$\pm$0.49     & 194.94$\pm$31.76 \\ 
+    Ray 15 Nodes       & 16.05$\pm$0.82     & 213.55$\pm$35.97 \\ 
+    Ray 20 Nodes       & 15.70$\pm$0.61     & 218.29$\pm$36.06 \\ 
     Ray 25 Nodes       & 15.83$\pm$0.79     & 216.47$\pm$35.84 \\ \hline
     \end{tabular}
     \label{TotTime}
@@ -1021,10 +1053,10 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     \begin{tabular}{|l|l|l|l|}
     \hline
     \SI[parse-numbers=false]{\#}{(\minute)}    & Do11             & Do12           & Do13               \\ \hline
-    1 Thread (MAT, PC) & 410.56$\pm$12.24 & 29.51$\pm$3.39 & 2986.77$\pm$549.99 \\ \hline
-    1 Thread (Py, PC)  & 172.29$\pm$1.24  & 1.35$\pm$0.33  & 109.98$\pm$0.80    \\ \hline
-    1 Thread (Py)      & 302.17$\pm$45.64 & 4.53$\pm$0.78  & 502.92$\pm$182.60  \\ \hline
-    True 1 Thread (Py) & 313.55$\pm$35.05 & 3.49$\pm$0.39  & 291.44$\pm$24.82   \\ \hline
+    1 Thread (MAT, PC) & 410.56$\pm$12.24 & 29.51$\pm$3.39 & 2986.77$\pm$549.99 \\ 
+    1 Thread (Py, PC)  & 172.29$\pm$1.24  & 1.35$\pm$0.33  & 109.98$\pm$0.80    \\ 
+    1 Thread (Py)      & 302.17$\pm$45.64 & 4.53$\pm$0.78  & 502.92$\pm$182.60  \\ 
+    True 1 Thread (Py) & 313.55$\pm$35.05 & 3.49$\pm$0.39  & 291.44$\pm$24.82   \\ 
     Ax 4 slices        & 60.99$\pm$9.10   & 0.81$\pm$0.15  & 59.96$\pm$9.62     \\ \hline
     \end{tabular}
     \label{AppendixSeperateTimes}
@@ -1040,17 +1072,16 @@ To put the comparative speedup factor of \texttt{Do13} into context, it is aroun
 %Seperate Table over speedup compared to original MATLAB script?
 \begin{table}[H]
 \centering
+    \caption{Table of the executions times for two different machines with NumPy either using one or all threads.
+    Xeon @ \SI{3.07}{\giga\hertz} with 12 cores and \SI{192}{\giga\byte} RAM. EPYC @ \SI{3.35}{\giga\hertz} with 32 cores and \SI{512}{\giga\byte}.}
     \begin{tabular}{|l|l|l|l|l|}
     \hline
     \SI[parse-numbers=false]{\#}{(\minute)} & Total & Do11  & Do12  & Do13  \\ \hline
-    Xeon all Threads                        & 98.2  & 16.2  & 0.85  & 81.1  \\ \hline
-    Xeon 1 Thread                           & 34.7  & 16.3  & 0.21  & 18.2  \\ \hline
-    EPYC all Threads                        & 64.9  & 5.6   & 0.6   & 58.7  \\ \hline
+    Xeon all Threads                        & 98.2  & 16.2  & 0.85  & 81.1  \\ 
+    Xeon 1 Thread                           & 34.7  & 16.3  & 0.21  & 18.2  \\ 
+    EPYC all Threads                        & 64.9  & 5.6   & 0.6   & 58.7  \\ 
     EPYC 1 Thread                           & 12.0  & 5.9   & 0.2   & 5.9   \\ \hline
     \end{tabular}
-    
-    \caption{Table of the executions times for two different machines with NumPy either using one or all threads.
-    Xeon @ \SI{3.07}{\giga\hertz} with 12 cores and \SI{192}{\giga\byte} RAM. EPYC @ \SI{3.35}{\giga\hertz} with 32 cores and \SI{512}{\giga\hertz}.}
     \label{Acc:NumPy1Thread}
 \end{table}
 
@@ -1223,35 +1254,35 @@ The MATLAB code could be tested on octave to integrate it with the Python script
     \begin{tabular}{|l|l|l|}
     \hline
     \#                 & Total (min)        & Speedup AU       \\ \hline
-    1 Thread (MAT, PC) & 3426.85$\pm$550.14 & 1.0$\pm$0.23     \\ \hline
-    1 Thread (Py, PC)  & 283.63$\pm$1.51    & 12.08$\pm$1.94   \\ \hline
-    1 Thread (Py)      & 809.62$\pm$188.22  & 4.23$\pm$1.20    \\ \hline
-    true 1 Thread (Py) & 608.48$\pm$42.95   & 5.63$\pm$0.99    \\ \hline
-    Ax 4 slices        & 121.77$\pm$13.25   & 28.14$\pm$5.46   \\ \hline
-    Ray 1 Nodes        & 174.33$\pm$34.50   & 19.66$\pm$5.01   \\ \hline
-    Ray 2 Nodes        & 68.06$\pm$6.55     & 50.35$\pm$9.42   \\ \hline
-    Ray 3 Nodes        & 46.29$\pm$5.13     & 74.02$\pm$14.44  \\ \hline
-    Ray 4 Nodes        & 35.15$\pm$3.13     & 97.48$\pm$17.89  \\ \hline
-    Ray 5 Nodes        & 28.78$\pm$2.46     & 119.09$\pm$21.65 \\ \hline
-    Ray 6 Nodes        & 25.10$\pm$1.85     & 136.53$\pm$24.11 \\ \hline
-    Ray 7 Nodes        & 22.93$\pm$1.23     & 149.42$\pm$25.28 \\ \hline
-    Ray 8 Nodes        & 20.77$\pm$0.64     & 165.02$\pm$26.97 \\ \hline
-    Ray 9 Nodes        & 19.12$\pm$0.81     & 179.22$\pm$29.76 \\ \hline
-    Ray 10 Nodes       & 17.58$\pm$0.49     & 194.94$\pm$31.76 \\ \hline
-    Ray 11 Nodes       & 17.21$\pm$0.75     & 199.09$\pm$33.13 \\ \hline
-    Ray 12 Nodes       & 17.49$\pm$0.92     & 195.97$\pm$33.11 \\ \hline
-    Ray 13 Nodes       & 17.43$\pm$0.51     & 196.60$\pm$32.09 \\ \hline
-    Ray 14 Nodes       & 16.36$\pm$0.60     & 209.52$\pm$34.50 \\ \hline
-    Ray 15 Nodes       & 16.05$\pm$0.82     & 213.55$\pm$35.97 \\ \hline
-    Ray 16 Nodes       & 15.22$\pm$1.04     & 225.23$\pm$39.28 \\ \hline
-    Ray 17 Nodes       & 15.35$\pm$0.73     & 223.20$\pm$37.37 \\ \hline
-    Ray 18 Nodes       & 15.43$\pm$0.59     & 222.11$\pm$36.65 \\ \hline
-    Ray 19 Nodes       & 15.41$\pm$0.67     & 222.39$\pm$37.00 \\ \hline
-    Ray 20 Nodes       & 15.70$\pm$0.61     & 218.29$\pm$36.06 \\ \hline
-    Ray 21 Nodes       & 15.94$\pm$1.03     & 214.99$\pm$37.19 \\ \hline
-    Ray 22 Nodes       & 16.22$\pm$0.82     & 211.34$\pm$35.59 \\ \hline
-    Ray 23 Nodes       & 15.49$\pm$0.41     & 221.24$\pm$36.00 \\ \hline
-    Ray 24 Nodes       & 15.77$\pm$0.59     & 217.33$\pm$36.00 \\ \hline
+    1 Thread (MAT, PC) & 3426.85$\pm$550.14 & 1.0$\pm$0.23     \\ 
+    1 Thread (Py, PC)  & 283.63$\pm$1.51    & 12.08$\pm$1.94   \\ 
+    1 Thread (Py)      & 809.62$\pm$188.22  & 4.23$\pm$1.20    \\ 
+    true 1 Thread (Py) & 608.48$\pm$42.95   & 5.63$\pm$0.99    \\ 
+    Ax 4 slices        & 121.77$\pm$13.25   & 28.14$\pm$5.46   \\ 
+    Ray 1 Nodes        & 174.33$\pm$34.50   & 19.66$\pm$5.01   \\ 
+    Ray 2 Nodes        & 68.06$\pm$6.55     & 50.35$\pm$9.42   \\ 
+    Ray 3 Nodes        & 46.29$\pm$5.13     & 74.02$\pm$14.44  \\ 
+    Ray 4 Nodes        & 35.15$\pm$3.13     & 97.48$\pm$17.89  \\ 
+    Ray 5 Nodes        & 28.78$\pm$2.46     & 119.09$\pm$21.65 \\ 
+    Ray 6 Nodes        & 25.10$\pm$1.85     & 136.53$\pm$24.11 \\ 
+    Ray 7 Nodes        & 22.93$\pm$1.23     & 149.42$\pm$25.28 \\ 
+    Ray 8 Nodes        & 20.77$\pm$0.64     & 165.02$\pm$26.97 \\ 
+    Ray 9 Nodes        & 19.12$\pm$0.81     & 179.22$\pm$29.76 \\ 
+    Ray 10 Nodes       & 17.58$\pm$0.49     & 194.94$\pm$31.76 \\ 
+    Ray 11 Nodes       & 17.21$\pm$0.75     & 199.09$\pm$33.13 \\ 
+    Ray 12 Nodes       & 17.49$\pm$0.92     & 195.97$\pm$33.11 \\ 
+    Ray 13 Nodes       & 17.43$\pm$0.51     & 196.60$\pm$32.09 \\ 
+    Ray 14 Nodes       & 16.36$\pm$0.60     & 209.52$\pm$34.50 \\ 
+    Ray 15 Nodes       & 16.05$\pm$0.82     & 213.55$\pm$35.97 \\ 
+    Ray 16 Nodes       & 15.22$\pm$1.04     & 225.23$\pm$39.28 \\ 
+    Ray 17 Nodes       & 15.35$\pm$0.73     & 223.20$\pm$37.37 \\ 
+    Ray 18 Nodes       & 15.43$\pm$0.59     & 222.11$\pm$36.65 \\ 
+    Ray 19 Nodes       & 15.41$\pm$0.67     & 222.39$\pm$37.00 \\ 
+    Ray 20 Nodes       & 15.70$\pm$0.61     & 218.29$\pm$36.06 \\ 
+    Ray 21 Nodes       & 15.94$\pm$1.03     & 214.99$\pm$37.19 \\ 
+    Ray 22 Nodes       & 16.22$\pm$0.82     & 211.34$\pm$35.59 \\ 
+    Ray 23 Nodes       & 15.49$\pm$0.41     & 221.24$\pm$36.00 \\ 
+    Ray 24 Nodes       & 15.77$\pm$0.59     & 217.33$\pm$36.00 \\ 
     Ray 25 Nodes       & 15.83$\pm$0.79     & 216.47$\pm$35.84 \\ \hline
     \end{tabular}
 
