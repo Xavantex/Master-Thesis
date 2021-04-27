@@ -128,7 +128,7 @@
 \newglossaryentry{SIMD}
 {
     name = SIMD,
-    description = {Single Instruction, Multiple Data or SIMD for short is performing the same operation on multiple data points\cite{enwiki:MISD}}
+    description = {Single Instruction, Multiple Data or SIMD for short is performing the same operation on multiple data points~\cite{enwiki:MISD,GCC:MISD,Intel:MISD}}
 }
 
 \newglossaryentry{parallelization}
@@ -152,7 +152,7 @@
 \newglossaryentry{Profiling}
 {
     name = profiling,
-    description = {Profiling is the collection of data and statistics from the execution of a program. Profiling can point out the memory usage or the number of times specific functions are called for example. Profiling helps point out potential problems or bottlenecks in code~\cite{enwiki:1011877534}}
+    description = {Profiling is the collection of data and statistics from the execution of a program. Profiling can point out the memory usage or the number of times specific functions are called for example. Profiling helps point out potential problems or bottlenecks in code~\cite{enwiki:1011877534,Py:cProfile}}
 }
 
 \title{}
@@ -212,7 +212,7 @@ Researchers from Lund have conducted research on classifying images in three dif
 The researchers showed several pictures and words with no inherit link between them to eighteen different subjects and asked the subjects to remember them.
 Afterwards they only showed the words to the subjects and asked them to recall the picture associated to each word.
 During the experiment they recorded enormous amounts of data using an EEG cap, a rubber cap with many probes attached at specific points on a head.
-They preprocessed the data and trained separate SVM (Support Vector Machine)~\cite{wiki:SVM} models on the encoding data for each subject to distinguish between three categories, faces, landmarks and objects.
+They preprocessed the data and trained separate SVM (Support Vector Machine)~\cite{wiki:SVM,Cortes1995} models on the encoding data for each subject to distinguish between three categories, faces, landmarks and objects.
 They tested the models on the data recorded when they were asked to retrieve the associated pictures.
 The entirety of the scripts took about a \emph{week's} time to execute originally. 
 
@@ -561,7 +561,7 @@ Not all the rules from Langtangen have been listed in \cref{guidelines}, the few
     The problem of explicit loops being slow in Python stems from the fact that Python is an interpreted language.
     In a compiled language an interpreter does not have to interpret each line of code for every iteration of an explicit loop.
     Just by avoiding interpretation a compiled language has a significant speedup compared to Python because it has to interpret the code.
-    A compiler can use other techniques such as loop unrolling to avoid unnecessary instructions or load times~\cite{wiki:LoopUnroll}.
+    A compiler can use other techniques such as loop unrolling to avoid unnecessary instructions or load times~\cite{wiki:LoopUnroll,agner:LoopUnroll}.
     A compiler is able to notice patterns in loops to better optimize the code structure for the hardware, without changing the final results.
 
     \item \textbf{Rule 2}: Avoid module prefix in frequently called functions.
@@ -634,7 +634,7 @@ Multiple ways of saving Python data was explored during the project due to \text
 There were multiple ways of saving files, all with different advantages and disadvantages.
 One solution that was explored was Apache Arrow, which is a library for storing flat or hierarchical data in a columnar memory format.
 Apache Arrow is designed for efficiency on modern hardware like GPUs and CPUs~\cite{AA:apacheArrow}.
-According to Apache Arrow, the advantage of a columnar memory format~\cite{enwiki:columnarData} is the use of vectorization operations on data with SIMD (Single Instruction, Multiple Data) instructions included in modern processors.
+According to Apache Arrow, the advantage of a columnar memory format~\cite{enwiki:columnarData,AWS:columnarData} is the use of vectorization operations on data with SIMD (Single Instruction, Multiple Data) instructions included in modern processors.
 When data is sorted into columns, multiple entries in a single column could be changed with SIMD instructions~\cite{AA:Overview}.
 
 
@@ -643,7 +643,7 @@ A smaller file size due to compression decreases the time on the data bus when m
 Even if smaller amounts of data takes less time on the bus, one must still consider the time it takes to compress the data, the compression ratio and the write speed, most of which depend on the hardware.
 
 Not only CPUs have become increasingly better, a lot of work has been done with storage devices as well.
-Modern hardware have tried to move disk closer and closer to the CPU with various means, such as using caches within the disk to be able to read and write data faster to it~\cite{enwiki:1015447262}.
+Modern hardware have tried to move disk closer and closer to the CPU with various means, such as using caches within the disk to be able to read and write data faster to it~\cite{enwiki:1015447262,diskbuffer}.
 Even if storage devices have improved, it is worth noting that CPUs have improved much faster and will in general always be faster than any other part in a machine.
 Most other parts in a machine are slower than the CPU because machines use a memory hierarchy to simulate fast and large storage~\cite{ComputerMemoryHierarchy, enwiki:memoryHierarchy}.
 %Ignoring the price of fast storage, there is still a fundamental law of physics which is unavoidable when designing CPUs which is the speed of light.
@@ -795,7 +795,7 @@ A higher demand in memory could lead to the CPU having to resort to a lower leve
 There are an array of troubles which could decrease performance when fighting over hardware resources.
 These are all speculations however and no deeper analysis as to why BLAS was slowing down the code was made.
 %The test results from testing if BLAS was slowing down the code are presented in \cref{AppendixSeperateTimes}.
-While there is an enormous boost to do simple vector operations in parallel, all modern CPUs have solved the main issues with vectorization operations by implementing fundamental vectorization instructions in the CPU which optimizes these operations for a single core~\cite{enwiki:avx}.
+While there is an enormous boost to do simple vector operations in parallel, all modern CPUs have solved the main issues with vectorization operations by implementing fundamental vectorization instructions in the CPU which optimizes these operations for a single core~\cite{enwiki:avx,AgnerFog:avx,Intel:avx}.
 
 \subsection{Error Estimation and Computations}
 
@@ -1046,6 +1046,7 @@ There are multiple ways of managing and setting up a Ray cluster some of which a
     \label{TotTime}
 \end{table}
 
+%Förklara de olika labels på varje rad?
 
 \begin{table}[H]
 \centering
