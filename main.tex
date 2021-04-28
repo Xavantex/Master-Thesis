@@ -203,19 +203,19 @@
 
 
 \section*{Abstract}
-With the realization that a common GPU could be used to accelerate large matrix computations, there was a surge in popularity for research in machine learning.
-Using GPUs machine learning was much more viable commercially and other areas, as it became cheap to train and develop machine learning models.
-With the revolution of machine learning becoming cheap, it has also begun to seep into all areas of research. 
-Much the same way computers became a necessity in research and society, machine learning is becoming a necessity today.
+%With the realization that a common GPU could be used to accelerate large matrix computations, there was a surge in popularity for research in machine learning.
+%Using GPUs machine learning was much more viable commercially and other areas, as it became cheap to train and develop machine learning models.
+%With the revolution of machine learning becoming cheap, it has also begun to seep into all areas of research. 
+%Much the same way computers became a necessity in research and society, machine learning is becoming a necessity today.
 
-Researchers from Lund have conducted research on classifying images in three different categories, faces, landmarks and objects.
-The researchers showed several pictures and words with no inherit link between them to eighteen different subjects and asked the subjects to remember them.
-Afterwards they only showed the words to the subjects and asked them to recall the picture associated to each word.
-During the experiment they recorded enormous amounts of data using an EEG cap, a rubber cap with many probes attached at specific points on a head.
-They preprocessed the data and trained separate SVM (Support Vector Machine)~\cite{wiki:SVM,Cortes1995} models on the encoding data for each subject to distinguish between three categories, faces, landmarks and objects.
-They tested the models on the data recorded when they were asked to retrieve the associated pictures.
-The entirety of the scripts took about a \emph{week's} time to execute originally. 
-
+Researchers from Lund have conducted research on classifying images in three different categories, faces, landmarks and objects from EEG data~\cite{BramoENEURO.0251-18.2018}.
+The researchers used SVMs (Support Vector Machine) to classify between the three different categories~\cite{wiki:SVM,Cortes1995}.
+%The researchers showed several pictures and words with no inherit link between them to eighteen different subjects and asked the subjects to remember them.
+%Afterwards they only showed the words to the subjects and asked them to recall the picture associated to each word.
+%During the experiment they recorded enormous amounts of data using an EEG cap, a rubber cap with many probes attached at specific points on a head.
+%They preprocessed the data and trained separate SVM (Support Vector Machine)~\cite{wiki:SVM,Cortes1995} models on the encoding data for each subject to distinguish between three categories, faces, landmarks and objects.
+%They tested the models on the data recorded when they were asked to retrieve the associated pictures.
+%The entirety of the scripts took about a \emph{week's} time to execute originally. 
 The scripts written to compute this had the potential to be extremely parallelized and could potentially be optimized to complete the computations much faster.
 The scripts were originally written in MATLAB code which is a propriety software and not the go to language for machine learning.
 With much other data science transitioning into Python as well, it was a key part in this project to understand the differences between MATLAB and Python and how to translate MATLAB code to Python.\par
@@ -1317,7 +1317,8 @@ The MATLAB code could be tested on octave to integrate it with the Python script
 \section{Source Code Repository}
 
 %Replace below FOR GITHUB Link or reference to source code or alternative
-\url{https://gitlab.datahub.erdc.ericsson.net/Erickson/masterthesiseeganalysis}
+The source code was written and executed in Python 3.8. \newline
+\url{https://github.com/Xavantex/masterthesiseeganalysis}
 
 \end{appendices}
 
