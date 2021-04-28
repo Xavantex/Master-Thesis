@@ -322,13 +322,14 @@ BCI could potentially allow a user to control an exoskeleton, a remote robot, ga
 BCI could potentially be used to monitor a person's mental health or how media such as music is perceived in the brain.
 At the Psychology department at Lund University they are extensively researching brain data and trying to understand how the human mind works.
 
-\subsubsection{Machine Learning}
+\subsubsection{Machine Learning in High Level Languages}
 
 As machine learning has become commonplace, people who are not experts are bound to stumble onto small or large issues.
 A researcher or enthusiast using machine learning models in a high level language will only see what the developers of the model promise.
 What researchers and enthusiasts do not see is the chain of libraries and APIs from hardware instructions to the functions they use.
-Despite the large chain of middlemen most programs work as advertised, but there are still caveats to a lot of high-level languages. 
-While creating a program these days have become relatively simple, it is by no means easy to create general programs which fully utilize the hardware they run on.
+Despite the large chain of middlemen most machine learning models work as advertised, but there are still caveats to a lot of high-level languages. 
+While creating a program with machine learning these days have become relatively simple, it is by no means easy to create one which fully utilize the hardware it is run on.
+Most general programs in high level languages struggle to fully utilize the hardware they are run on because they usually trade speed for simplicity.
 
 \subsubsection{Motivation}
 
@@ -365,7 +366,8 @@ The approaches were to use more hardware in a cloud solution, decreasing sequent
 
 \subsection{Scope of the Project}%report}
 
-It was decided that all old MATLAB code except for the preprocessing parts using Fieldtrip would be translated to Python.
+It was decided that all old MATLAB code except for the preprocessing parts using the FieldTrip library would be translated to Python.
+Fieldtrip is a MEG, EEG and iEEG analysis library\cite{Oostenveld2010}.
 The preprocessing only took a few hours and the extra development time necessary to translate it was deemed unecessary. 
 The translated Python code was going to be optimized for speed to shave off as much time as possible within reasonable limit.
 The optimized Python code would then be parallelized and implemented in mainly two different frameworks.
@@ -384,7 +386,8 @@ The following list explains what each individual function in the code does and t
 \cref{fig:GeneralProgramStructure} gives an overview and visualizes the execution of the program and the called functions.
 The input data was collected from an EEG cap which records brain signals.
 The input data is twofold, one was recorded when the subjects were trying to store a memory for later use, the encoding data and the other when they were trying to recollect the memory, the retrieval data.
-The encoding data was divided in the preprocessing into Amp and NonAmp parts for each subject.%Kolla med johan vad exakt för uppdelning det är, ena är amplification men andra, är det fas?
+The encoding data was divided in the preprocessing into Amp and NonAmp parts for each subject. 
+Amp is the raw data from collected the EEG records and NonAmp is the time-frequency transform of Amp using a Morlet wavelet.%Kolla med johan vad exakt för uppdelning det är, ena är amplification men andra, är det fas?
 
 \begin{itemize}
     \item \texttt{Do11TrainClassifier}
@@ -447,91 +450,6 @@ Since \texttt{Do12TestClassifier} processes subjects from \texttt{Do11TrainClass
 
 \section{Theory}
 
-\subsection{Cluster Framework}
-
-A cluster computing framework or cluster framework is a framework from which one can set up and schedule computation that are to be distributed and computed over a cloud or cluster of computers.
-When refering to a cluster framework henceforth it should not be confused with other frameworks which could be categorized as cluster frameworks.
-A cluster framework in other contexts could for example  refer to a framework for virtualizing a cluster of computers to appear as a single machine.
-The virtualization of a cluster of computers to appear as a single machine could be used for applications or programs which are written for parallelization on a single machine.
-In this project a cluster computing framework does not virtualize a cluster but simply coordinate communication between computers and allow instructions to be executed on those computers.
-Distribution of a problem to multiple computers can speed up otherwise slow code if the computations are parallelizable.
-The distribution of a problem also has to contend with the communication overhead from sending instructions to other computers in a cluster.
-If the communication overhead in a distributed problem is not small compared to the execution time it could be slower to distribute the problem.
-
-In Python there are multiple different libraries which serves as a cluster computing framework~\cite{PythonClusterFrameworks}.
-Two of the most popular cluster frameworks are Dask and Ray, both of which are fairly recent projects which are still in active development.
-Dask, according to its authors, is a flexible library for parallel computing. 
-Dask specialize in processing of large datasets by extending commonly used libraries such as NumPy and pandas, to solve the issue of computing datasets which does not fit in memory for a single node/computer.
-Ray is a framework for building parallel and distributed applications with focus on low latency and high throughput scheduling.
-
-
-\subsection{Ray}
-
-\subsubsection{Ray Overview}
-
-Ray is an open-source project that was developed with primarily machine learning in mind~\cite{nishihara2017realtime, moritz2018ray}. 
-Even if Ray was developed primarily for machine learning applications, it is a general purpose framework for distributing computations~\cite{ray:whatIsRay}.
-The core functionality of Ray only requires decorating functions with a Python function decorator, meaning it does not require an extensive amount of time to learn.
-
-% write more about dask?
-The data processed in this project were all relatively small, thus the main advantages with Dask fell off.
-
-Ray's development team have stated that while they have API (Application Programming Interface) simplicity and reliability as their system design goals, they can give preference to their core system goals, performance and reliability during development~\cite{ray:SystemDesign}.
-
-%Write more in detail about Ray and how it works
-
-%Usage/functionality, finns det någon bättre term?
-\subsubsection{Ray Usage}
-
-The main function in Ray enable executing Python functions or classes in parallel with Python function decorators, called remote functions or remote actors~\cite{ray:remoteFunctions, ray:remoteClasses}.
-Henceforth remote functions and classes will be collectively referred to as remote functions.
-Defining a set of remote functions packages them to be available and executed on a Ray cluster.
-A Ray cluster is the background server and services run on a computer cluster by which the computers communicate and send instructions to each other~\cite{ray:rayCluster}.
-%Inte bästa citation, se om man kanske kan hitta en bättre source för vad Ray cluster e.
-To compute something with a remote function one calls it as a normal function and appends \texttt{.remote} before the arguments. 
-
-Remote functions returns abstract remote objects which represents the results from the remote functions.
-By returning abstract remote objects, Ray can schedule and execute other remote functions in parallel with previous and future calls to remote functions.
-Execution of a remote function is done in the background asynchronously from the script that called it and other remote function calls, on available hardware resources in the Ray cluster~\cite{ray:remoteFunctions}.
-%Kanske ska ha understående mening och byta ut meningen innan förra
-%Because execution of remote functions is done in the background and instead returns remote object, a script can call more remote functions to be done in parallel.
-Remote objects from remote functions in Ray are mainly used as arguments in other remote functions.
-Using abstract remote objects as arguments in other remote functions creates dependencies which Ray takes into account.
-Ray schedules and computes dependencies first, executing functions which have dependencies after their dependencies have been computed.
-Remote objects used in remote functions act as if they were the results the remote objects represents.
-With abstract objects used to represent future results, the intermediate results don't have to be returned to the scheduling node but can instead be either computed on the same node or sent to another available node~\cite{ray:remoteObjects}.
-
-To retrieve a result from a remote object, the method \texttt{.get} is used.
-The \texttt{.get} method retrieve and return the result an abstract remote object represents~\cite{ray:FetchingResults}.
-When \texttt{.get} is called, the script will block any subsequent function calls and wait until the result is computed.
-The Ray developers themselves recommend to delay retrieving results as much as possible because blocking subsequent scheduled remote function calls stops possible parallelism~\cite{ray:delayget}.
-
-Aside from the two main things in Ray, remote functions and \texttt{.get} to retrieve results, there are multiple supported libraries to speed up machine learning or to utilize Dask functionalities for example~\cite{ray:RaySGD, ray:Rayrllib, ray:RayTune, ray:RaySklearn, ray:DaskOnRay}. 
-It is possible in Ray to declare resource constraints for each remote function such as memory or CPU, or set up a scheduling strategy to make sure it is properly scheduled~\cite{ray:Resources, ray:PlacementGroup}.
-A schedule strategy in Ray could be to schedule things as locally as possible and only use other machines when absolutely necessary, or vice versa.
-
-\subsubsection{Dask versus Ray}
-
-%Lägga till i slutet av Ray/Dask subsection för comparison kanske.
-There have been discussions of the differences between Ray and Dask and many have concluded that the scheduling is the main difference between the two.
-Dask have a centralized scheduler which maintains and delegates all work, while on the contrary, Ray uses a decentralized scheduler, allowing each node to schedule work on the Ray cluster and within itself.
-There are advantages to both Ray and Dask, but Ray should theoretically have a more scalable strategy.
-
-
-\subsection{The Accelerator}
-
-The Accelerator is a data-processing framework which aims to provide fast data access, parallel execution, reproducibility and transparency~\cite{exax:Accelerator}.
-The main advantages with the Accelerator in terms of performance is reproducibility.
-Reproducibility means the Accelerator is able to keep track of what source code and dependencies have been used for each execution.
-The Accelerator can use old data from already executed code for which new code relies on~\cite{exax:sourceCode}.
-Using old data means the Accelerator is skipping code which has already been executed, saving time from unnecessary code execution.
-Assuming the execution time is evenly distributed and that the code is evenly changed over time, the Accelerator could on average remove up to 50\% of the execution time from start to finish.
-The Accelerator also have parallel execution built in to utilize all of the local CPUs resources~\cite{exax:parallelExecution}.
-
-By letting the Accelerator keep track of what has been executed and when, maintenance of the code becomes automated.
-Automating code maintenance speeds up development and eliminates human error which could be critical in a scientific or industrial environment.
-
-%\subsection{Python}
 \subsection{General Guidelines for Python Optimization and Speed}
 
 According to Python Scripting for Computational Science by H.P. Langtangen there are a few clear general best-practice rules for optimal run-time performance~\cite{pythonBook}.
@@ -695,7 +613,7 @@ In the end when it comes to Python one must follow profiling for everything to s
 %Should I have code here with the critical part of the code?
 \subsubsection{Lookups}
 
-Python lookups are a small set of optimizations but exists everywhere in Pythono.
+Python lookups are a small set of optimizations but exists everywhere in Python.
 Just a simple function call is a lookup to where the function is located.
 It is debated if people should even think about lookups since there are usually much larger speedups in either using another lower level language or in compiling the code.
 Just as there are a different number of lookups depending on how the import of a module is done, there is a lookup for each layer of a nested Python object.
@@ -705,16 +623,8 @@ However the most critical optimization in the project was due to lookups.
 %Need to extend these two sentences, feels a bit weak.
 %Expand on how the feature reduction might be unnecessary. Could be interesting to compare.
 
-%APPEND THIS SOMEWHERE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Without resorting to clusters the final solution for making any Python code faster would be to compile the code using a third party compiler such as Numba or Cython~\cite{matEval}.
-Compiling was not implemented in the project as it was concluded that it might just add another layer of complexity which the researchers will have to learn.
-Ray does support Cython code to speed up computation so it would have been possible to see an even greater speedup than the results of this project.
-
-
 %Not sure if I wanna keep this or not->
 %Even with all the mentioned changes it must be noted that the incessant loading and saving of files between scripts was creating excessive overhead, a small optimization step was to skip all intermediate loading of files.
-
-
 
 %\subsection{Algorithm, memory approaches}
 %Wasnt really a question of optimizing any algorithm
@@ -735,6 +645,91 @@ A large part of why the preprocessing scripts were not translated were because o
 A reason why one do not usually translate code and instead redo the whole program from scratch, is that even seemingly identical and standarized models such as SVMs can be implemented differently.
 Seemingly identical libraries are implemented differently, in different languages for a vast array of reasons, from different developer teams to how the languages themselves work.
 
+\subsection{Cluster Framework}
+
+A cluster computing framework or cluster framework is a framework from which one can set up and schedule computation that are to be distributed and computed over a cloud or cluster of computers.
+When refering to a cluster framework henceforth it should not be confused with other frameworks which could be categorized as cluster frameworks.
+A cluster framework in other contexts could for example  refer to a framework for virtualizing a cluster of computers to appear as a single machine.
+The virtualization of a cluster of computers to appear as a single machine could be used for applications or programs which are written for parallelization on a single machine.
+In this project a cluster computing framework does not virtualize a cluster but simply coordinate communication between computers and allow instructions to be executed on those computers.
+Distribution of a problem to multiple computers can speed up otherwise slow code if the computations are parallelizable.
+The distribution of a problem also has to contend with the communication overhead from sending instructions to other computers in a cluster.
+If the communication overhead in a distributed problem is not small compared to the execution time it could be slower to distribute the problem.
+
+In Python there are multiple different libraries which serves as a cluster computing framework~\cite{PythonClusterFrameworks}.
+Two of the most popular cluster frameworks are Dask and Ray, both of which are fairly recent projects which are still in active development.
+Dask, according to its authors, is a flexible library for parallel computing. 
+Dask specialize in processing of large datasets by extending commonly used libraries such as NumPy and pandas, to solve the issue of computing datasets which does not fit in memory for a single node/computer.
+Ray is a framework for building parallel and distributed applications with focus on low latency and high throughput scheduling.
+
+
+\subsection{Ray}
+
+\subsubsection{Ray Overview}
+
+Ray is an open-source project that was developed with primarily machine learning in mind~\cite{nishihara2017realtime, moritz2018ray}. 
+Even if Ray was developed primarily for machine learning applications, it is a general purpose framework for distributing computations~\cite{ray:whatIsRay}.
+The core functionality of Ray only requires decorating functions with a Python function decorator, meaning it does not require an extensive amount of time to learn.
+
+% write more about dask?
+The data processed in this project were all relatively small, thus the main advantages with Dask fell off.
+
+Ray's development team have stated that while they have API (Application Programming Interface) simplicity and reliability as their system design goals, they can give preference to their core system goals, performance and reliability during development~\cite{ray:SystemDesign}.
+
+%Write more in detail about Ray and how it works
+
+%Usage/functionality, finns det någon bättre term?
+\subsubsection{Ray Usage}
+
+The main function in Ray enable executing Python functions or classes in parallel with Python function decorators, called remote functions or remote actors~\cite{ray:remoteFunctions, ray:remoteClasses}.
+Henceforth remote functions and classes will be collectively referred to as remote functions.
+Defining a set of remote functions packages them to be available and executed on a Ray cluster.
+A Ray cluster is the background server and services run on a computer cluster by which the computers communicate and send instructions to each other~\cite{ray:rayCluster}.
+%Inte bästa citation, se om man kanske kan hitta en bättre source för vad Ray cluster e.
+To compute something with a remote function one calls it as a normal function and appends \texttt{.remote} before the arguments. 
+
+Remote functions returns abstract remote objects which represents the results from the remote functions.
+By returning abstract remote objects, Ray can schedule and execute other remote functions in parallel with previous and future calls to remote functions.
+Execution of a remote function is done in the background asynchronously from the script that called it and other remote function calls, on available hardware resources in the Ray cluster~\cite{ray:remoteFunctions}.
+%Kanske ska ha understående mening och byta ut meningen innan förra
+%Because execution of remote functions is done in the background and instead returns remote object, a script can call more remote functions to be done in parallel.
+Remote objects from remote functions in Ray are mainly used as arguments in other remote functions.
+Using abstract remote objects as arguments in other remote functions creates dependencies which Ray takes into account.
+Ray schedules and computes dependencies first, executing functions which have dependencies after their dependencies have been computed.
+Remote objects used in remote functions act as if they were the results the remote objects represents.
+With abstract objects used to represent future results, the intermediate results don't have to be returned to the scheduling node but can instead be either computed on the same node or sent to another available node~\cite{ray:remoteObjects}.
+
+To retrieve a result from a remote object, the method \texttt{.get} is used.
+The \texttt{.get} method retrieve and return the result an abstract remote object represents~\cite{ray:FetchingResults}.
+When \texttt{.get} is called, the script will block any subsequent function calls and wait until the result is computed.
+The Ray developers themselves recommend to delay retrieving results as much as possible because blocking subsequent scheduled remote function calls stops possible parallelism~\cite{ray:delayget}.
+
+Aside from the two main things in Ray, remote functions and \texttt{.get} to retrieve results, there are multiple supported libraries to speed up machine learning or to utilize Dask functionalities for example~\cite{ray:RaySGD, ray:Rayrllib, ray:RayTune, ray:RaySklearn, ray:DaskOnRay}. 
+It is possible in Ray to declare resource constraints for each remote function such as memory or CPU, or set up a scheduling strategy to make sure it is properly scheduled~\cite{ray:Resources, ray:PlacementGroup}.
+A schedule strategy in Ray could be to schedule things as locally as possible and only use other machines when absolutely necessary, or vice versa.
+
+\subsubsection{Dask versus Ray}
+
+%Lägga till i slutet av Ray/Dask subsection för comparison kanske.
+There have been discussions of the differences between Ray and Dask and many have concluded that the scheduling is the main difference between the two.
+Dask have a centralized scheduler which maintains and delegates all work, while on the contrary, Ray uses a decentralized scheduler, allowing each node to schedule work on the Ray cluster and within itself.
+There are advantages to both Ray and Dask, but Ray should theoretically have a more scalable strategy.
+
+
+\subsection{The Accelerator}
+
+The Accelerator is a data-processing framework which aims to provide fast data access, parallel execution, reproducibility and transparency~\cite{exax:Accelerator}.
+The main advantages with the Accelerator in terms of performance is reproducibility.
+Reproducibility means the Accelerator is able to keep track of what source code and dependencies have been used for each execution.
+The Accelerator can use old data from already executed code for which new code relies on~\cite{exax:sourceCode}.
+Using old data means the Accelerator is skipping code which has already been executed, saving time from unnecessary code execution.
+Assuming the execution time is evenly distributed and that the code is evenly changed over time, the Accelerator could on average remove up to 50\% of the execution time from start to finish.
+The Accelerator also have parallel execution built in to utilize all of the local CPUs resources~\cite{exax:parallelExecution}.
+
+By letting the Accelerator keep track of what has been executed and when, maintenance of the code becomes automated.
+Automating code maintenance speeds up development and eliminates human error which could be critical in a scientific or industrial environment.
+
+%\subsection{Python}
 
 \subsection{Code Parallelization}
 
@@ -763,14 +758,6 @@ There's even a small communication overhead in parallelizing problems on the sam
 %Ray does not need to return unnecessary intermediate data, instead it returns a remote object, a promise of a future which Ray can use as if it was the object itself when sending to another remote function.
 %Ray's abstraction of objects creates a more distributed execution of the code and utilizes all of the available hardware.
 
-\subsubsection{Ray}\label{RayNesting}
-
-After the first layer of parallelization was implemented, further work on multiple layers of parallelization proved more problematic.
-While Ray excels at large parallelization there still exists problems with nesting remote functions. As such, workarounds had to be made to solve the problems.
-The biggest with nesting remote functions in Ray is when the \texttt{.get} method is called it signals to the Ray scheduler that it is no longer using hardware resources.
-If \texttt{.get} is used within a remote function Ray will see it is no longer using resources and execute the next scheduled function, thus potentially executing more functions than there is CPU cores or memory.
-Even if there are ways of avoiding nesting remote calls, the unnecessary workarounds could lead to degradation and hopefully the Ray developer team fixes this feature. 
-
 \subsubsection{Amdahl's Law}
 
 Amdahl's law states that the bottleneck of parallelizing a program will always be the serial part of the code, in \cref{Amdahl} $S_{latency}(s)$ is the total speedup of a program after parallelizing, $p$ is the fraction of the whole program which is parallelizable and $s$ is the speedup of the parallelizable part of the program.
@@ -779,6 +766,22 @@ The implication of Amdahl's law is that if eighty percent of a program is parall
 \begin{equation}\label{Amdahl}
     S_{latency}(s) = \frac{1}{(1-p) + \frac{p}{s}}
 \end{equation}
+
+\subsubsection{Ray}\label{RayNesting}
+
+After the first layer of parallelization was implemented, further work on multiple layers of parallelization proved more problematic.
+While Ray excels at large parallelization there still exists problems with nesting remote functions. 
+As such, workarounds had to be made to solve the problems.
+The problem with nesting remote functions in Ray is when the \texttt{.get} method is called it signals to the Ray scheduler that it is no longer using hardware resources.
+If \texttt{.get} is used within a remote function Ray will see it is no longer using resources and execute the next scheduled function, thus potentially executing more functions than there is CPU cores or memory.
+Even if there are ways of avoiding nesting remote calls, the unnecessary workarounds could lead to degradation and hopefully the Ray developer team fixes this feature.
+
+\subsection{Compiling}
+
+%APPEND THIS SOMEWHERE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Without resorting to clusters the final solution for making any Python code faster would be to compile the code using a third party compiler such as Numba or Cython~\cite{matEval}.
+Compiling was not implemented in the project as it was concluded that it might just add another layer of complexity which the researchers will have to learn.
+Ray does support Cython code to speed up computation so it would have been possible to see an even greater speedup than the results of this project.
 
 \subsection{BLAS}
 
@@ -1190,12 +1193,25 @@ The speedup factor in \cref{fig:MachineXSpeedup} is higher than the number of ma
 For example with five machines the speedup factor is around six times faster than using one machine.
 The speedup could be larger than the number of machines because of the extra memory added with each node.
 More memory means faster access to data, which could speed up computations.
-Beside the workload, the master node also hosts the global control store or GCS~\cite{ray:rayCluster,ray:GCS, ray:Architecture}.
+This would support the idea of superlinear speedup but this is probably not what is happening~\cite{superlinearSPEED}.
+What is probably happening is the increase in the number of machines, decreases the relative overhead of maintenance for Ray.
+There is most likely a static overhead from Ray regardless of the number of machines and as the number of machines increases, the static overhead is either distributed over the cores or only occupy one core.
+
+The distribution of the static overhead would make the relative speedup faster than the added number of cores.
+If the static overhead only occupies one core it would also make the relative speedup faster as the percentage of cores used for the static overhead is smaller with the added number of machines.
+Something which support the idea of the static overhead is the fact that the master node hosts the global control store or GCS~\cite{ray:rayCluster,ray:GCS, ray:Architecture}.
 The GCS could slow down Ray when using one machine compared to using multiple machines.
 There could be a problem with using Ray on only one machine, it is primarily built for a cluster environment and not meant to be used for a single CPU other than for debugging and development.
+
+\subsubsection{Convergence of Ray}\label{rayConvergence}
+
 While the performance gain does decrease with each machine the gain is still quite impressive considering the communication overhead, which can be attributed to the massively parallel problem and almost no serial part in the code.
 While Amdahl's law of speedup does not theoretically affect this problem there are issues of the extra overhead with Ray when adding more and more compute nodes, the necessity of keeping everything synchronized and the data transfer of the object store.
 The valleys for the speedup factor at around twelve and twenty one machines could be due to the time they were executed, naturally if the scripts are executed during the day the cloud at Ericsson will be at a higher load which could lead to a slowdown.
+
+A way to determine if it is the communication overhead that is causing the convergence is to remove any computations and only send empty functions back and forth.
+Sending empty functions would give an estimate of how long it takes for Ray to simply send all functions back and forth.
+If it is shown that the communication overhead is only a fraction of the execution time it can be concluded that problem is with the algorithm instead.
 
 \subsection{Cloud vs. Local}
 
@@ -1227,6 +1243,12 @@ A suggestion would be to try and divide the code into larger chunks which takes 
 Larger chunks would eliminate some of the communication overhead and Ray would not need to schedule as many tasks.
 Too large chunks could however lose too much of the parallelism and bottleneck the code that way instead.
 Profiling of the optimal division of chunks would have to be made to see what runs fastest overall, or an in-depth analysis of the optimal number of chunks for the given number of threads.
+
+Another way to determine if the convergence of Ray is due to communication overhead or if it related to the computations, is to send empty functions as discussed in \cref{rayConvergence}.
+This could potentially exaggerate the communication overhead as there would be greater demand of communication resources between the nodes.
+While the communication overhead could be exaggerated it would at least give an upper limit to the communication overhead.
+Each empty function would need dummy data for the arguments and return dummy data to take the serialization and the time to send the data into account.
+The dummy data would have to be of the same datatype and size the empty functions would otherwise have used.
 
 A problem with the current Ray implementation is the lack of logging and keeping track of what and when something has been executed.
 While Ray lack logs the Accelerator lack the scalability of Ray, a future solution could be to have the Accelerator keep track of what and when something has been executed and use Ray to handle the execution.
