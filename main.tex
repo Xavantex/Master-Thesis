@@ -222,7 +222,7 @@ The aim of this project is to translate the MATLAB code in the aforementioned Lu
 With much other data science transitioning into Python as well, it was a key part in this project to understand the differences between MATLAB and Python and how to translate MATLAB code to Python.\par
 
 With the exception of the preprocessing scripts, all the original MATLAB scripts were translated to Python.
-The Translated Python scripts were optimized for speed and parallelized to decrease the execution time even further.
+The translated Python scripts were optimized for speed and parallelized to decrease the execution time even further.
 Two major parallel implementations of the Python scripts were made.
 One parallel implementation was made using the Ray framework to compute in the cloud~\cite{ray:whatIsRay}.
 The other parallel implementation was made using the Accelerator, a framework to compute using local threads~\cite{exax:Accelerator}.
@@ -236,7 +236,7 @@ The results of the project highlight the importance of learning and teaching bas
 While not entirely considered in this project, doing complexity analysis of code is important as well.
 %Not sure if I should include the below stuff though. Might be unecessary to talk about.
 Future work includes a deeper complexity analysis on both a high and low level, since a high level language such as Python relies heavily on modules with low level code.
-Future work could also dive deeper into the code of NumPy, as the current code relies heavily on NumPy and has shown to be a bottleneck in this project.
+Future work also includes an in-depth analysis of the NumPy source code, as the current code relies heavily on NumPy and has shown to be a bottleneck in this project.
 
 %\newpage
 \begin{otherlanguage}{swedish}
@@ -570,7 +570,7 @@ Most other parts in a machine are slower than the CPU because machines use a mem
 %The length speed of light moves between one clock cycle at \SI{8}{GHz} is about \SI{4}{\centi\meter} ($c/3GHz$) which is the theoretical maximum, not accounting for other factors which decreases the length traveled in a CPU.
 With the CPU being much faster than disk, it is sometimes worth investigating things such as data compression for a better runtime performance.
 
-The implementation of Apache Arrow's save format was however left as an in depth problem due to the time saving files becoming negligible after using pickle.
+The implementation of Apache Arrow's save format was however left as an in-depth problem due to the time saving files becoming negligible after using pickle.
 pickle is a standard library in Python for serializing and saving files in Python~\cite{Py:pickle}.
 
 \subsubsection{Extension Modules}
@@ -1161,16 +1161,15 @@ Anyone can develop and publish the Python code, while MATLAB is both excluded to
 
 The project has demonstrated the importance of using profiling to find problematic slow running code for improving runtime performance.
 After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs.
-The 200 time speedup does not account for any difference in hardware used for the measurements.
-The results indicate that the VCPUs on the cluster perform worse individually compared to the CPU in the test PC.
-In other words if the original MATLAB code was executed on one of the VCPUs, the speedup compared to those results would potentially have been greater than 200 times.
+However, the results indicate that the VCPUs on the cluster perform worse individually, compared to the CPU in the test PC used for the MATLAB code.
+In other words, if the original MATLAB code is executed on one of the VCPUs, the speedup compared to those results could potentially be greater than 200 times.
 %The 200 time speedup does not account for the difference in performance for the given hardware, with the results indicating that the VCPUs perform worse individually compared to the test PC.
 
 \subsection{NumPy}
 
-An interesting aspect which was revealed at the end of the project was the fact that a common library such as NumPy was using multiple threads, even in a parallel environment.
+An interesting aspect which was revealed at the end of the project was the fact that a common library, NumPy was using multiple threads, even in a parallel environment.
 The results in this project indicate that the parallelization made in NumPy could be slowing down programs.
-Parallel NumPy could maybe be slower due to fighting over resources or communication overhead.
+Parallel NumPy could maybe be slower due to conflicts over resources or communication overhead.
 At the time of writing, it is not clear why parallel execution within NumPy is slow.
 %The slower execution time for parallel NumPy could be an array of things and I dare not speculate too much. 
 What the slower execution time of parallel NumPy does show is the necessity of profiling and measuring when Python code is meant to be fast.
@@ -1239,14 +1238,14 @@ It is in the end a discussion the researchers at Lund will have to take themselv
 \section{Outlook}
 
 There are still things which could be improved.
-I suspect that at the moment a big reason for the fifteen minute hard limit for the Ray implementation might be due to the high scalability of the current code.
+It is suspected at the moment that a big reason for the fifteen minute hard limit for the Ray implementation, might be due to the high scalability of the current code.
 The very smallest parallel code block in the Ray implementation is surprisingly fast to execute.
 When the Ray implementation have a growing number of cores and fast small functions, the speed of distributing tasks become increasingly important.
 It could be the distribution of small tasks is limiting Ray to utilize the hardware fully.
 
 A suggestion would be to try and divide the code into larger chunks which takes a longer time to execute.
 Larger chunks would eliminate some of the communication overhead and Ray would not need to schedule as many tasks.
-Too large chunks could however lose too much of the parallelism and bottleneck the code that way instead.
+Too large chunks could however lose too much of the parallelism and bottleneck the code instead.
 Profiling of the optimal division of chunks would have to be made to see what runs fastest overall, or an in-depth analysis of the optimal number of chunks for the given number of threads.
 
 Another way to determine if the convergence of Ray is due to communication overhead or if it related to the computations, is to send empty functions as discussed in \cref{rayConvergence}.
