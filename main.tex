@@ -217,7 +217,8 @@ The researchers used SVMs (Support Vector Machine) to classify between the three
 %They tested the models on the data recorded when they were asked to retrieve the associated pictures.
 %The entirety of the scripts took about a \emph{week's} time to execute originally. 
 The scripts written to compute this had the potential to be extremely parallelized and could potentially be optimized to complete the computations much faster.
-The scripts were originally written in MATLAB code which is a propriety software and not the go to language for machine learning.
+The scripts were originally written in MATLAB which is a propriety software and not the most popular language for machine learning.
+The aim of this project is to translate the MATLAB code in the aforementioned Lund project to Python and perform code optimization and parallelization, in order to reduce the execution time.
 With much other data science transitioning into Python as well, it was a key part in this project to understand the differences between MATLAB and Python and how to translate MATLAB code to Python.\par
 
 With the exception of the preprocessing scripts, all the original MATLAB scripts were translated to Python.
@@ -234,7 +235,7 @@ The benchmark of the original code used less iterations than the researchers use
 The results of the project highlight the importance of learning and teaching basic profiling of slow code.
 While not entirely considered in this project, doing complexity analysis of code is important as well.
 %Not sure if I should include the below stuff though. Might be unecessary to talk about.
-Future work should perhaps include doing a deeper complexity analysis on both a high and low level, since a high level language such as Python relies heavily on modules with low level code.
+Future work includes a deeper complexity analysis on both a high and low level, since a high level language such as Python relies heavily on modules with low level code.
 Future work could also dive deeper into the code of NumPy, as the current code relies heavily on NumPy and has shown to be a bottleneck in this project.
 
 %\newpage
@@ -1159,15 +1160,19 @@ Anyone can develop and publish the Python code, while MATLAB is both excluded to
 \subsection{Profiling}
 
 The project has demonstrated the importance of using profiling to find problematic slow running code for improving runtime performance.
-After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs. 
-The 200 time speedup does not account for the difference in performance for the given hardware, with the results indicating that the VCPUs perform worse individually compared to the test PC.
+After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs.
+The 200 time speedup does not account for any difference in hardware used for the measurements.
+The results indicate that the VCPUs on the cluster perform worse individually compared to the CPU in the test PC.
+In other words if the original MATLAB code was executed on one of the VCPUs, the speedup compared to those results would potentially have been greater than 200 times.
+%The 200 time speedup does not account for the difference in performance for the given hardware, with the results indicating that the VCPUs perform worse individually compared to the test PC.
 
 \subsection{NumPy}
 
 An interesting aspect which was revealed at the end of the project was the fact that a common library such as NumPy was using multiple threads, even in a parallel environment.
 The results in this project indicate that the parallelization made in NumPy could be slowing down programs.
 Parallel NumPy could maybe be slower due to fighting over resources or communication overhead.
-The slower execution time for parallel NumPy could be an array of things and I dare not speculate too much. 
+At the time of writing, it is not clear why parallel execution within NumPy is slow.
+%The slower execution time for parallel NumPy could be an array of things and I dare not speculate too much. 
 What the slower execution time of parallel NumPy does show is the necessity of profiling and measuring when Python code is meant to be fast.
 
 Python contain so many moving parts, it is impossible to say what implementation will run faster before testing them.
@@ -1251,17 +1256,18 @@ Each empty function would need dummy data for the arguments and return dummy dat
 The dummy data would have to be of the same datatype and size the empty functions would otherwise have used.
 
 A problem with the current Ray implementation is the lack of logging and keeping track of what and when something has been executed.
-While Ray lack logs the Accelerator lack the scalability of Ray, a future solution could be to have the Accelerator keep track of what and when something has been executed and use Ray to handle the execution.
+While Ray lacks logs the Accelerator lacks the scalability of Ray, a future solution could be to have the Accelerator keep track of what and when something has been executed and use Ray to handle the execution.
 Some problems would be how to handle setup and remote execution of the code.
 The setup of the cluster would probably have to be integrated and executed through the Accelerator.
 
 The advantages are of course the handling of dependencies, possible speedup from skipping unnecessary unchanged parts in the code and the speedup/scalability of Ray.
 
 There is the possibility of developing a custom or another general framework for Ray to track dependencies and accelerating computations.
-Because unnecessary features from the Accelerator could be left out from this general framework, it could be faster than integrating Ray and the Accelerator.
+Since unnecessary features from the Accelerator could be left out from this general framework, it could be faster than integrating Ray and the Accelerator.
 
 The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all unnecessary loading from disk.
-It would not change the end result just integrating the scripts more and getting rid of all the intermediate loading of files.
+Integrating the scripts and removing intermediate loading of files could speed up the computations.
+It would not change the final output data just integrating the scripts more and getting rid of all the intermediate loading of files.
 Similiar to the Accelerator an optimization in the MATLAB code could be to create checkpoints which only executes changed code.
 The MATLAB code could be tested on octave to integrate it with the Python scripts and run it with Ray for a parallel execution.
 
