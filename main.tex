@@ -242,34 +242,37 @@ Future work also includes an in-depth analysis of the NumPy source code, as the 
 \begin{otherlanguage}{swedish}
 \section*{Populärvetenskaplig sammanfattning}
 Datorer är en central och oundviklig del av mångas vardag idag.
-De framsteg som har gjorts inom maskin-inlärning har gjort det nästintill lika viktig inom mångas vardag som datorer är.
-Med de otroliga framsteg som gjorts inom maskininlärning så har man även vänt sig till det för att försöka tolka hjärnsignaler, i hopp om att skapa BCI (Brain Computer Interface) eller hjärn dator gränssnitt.
+De framsteg som har gjorts inom maskin-inlärning har gjort det nästintill lika viktigt inom mångas vardag som datorer.
+Med de otroliga framsteg som gjorts inom maskininlärning så har man börjat använda det för att försöka tolka hjärnsignaler, i hopp om att skapa BCI (Brain Computer Interface) eller hjärn dator gränssnitt.
 Forskare på Lund Universitet genomförde ett experiment där de försökte kategorisera hjärnsignaler med hjälp av maskin-inlärning.
 Forskarna försökte kategorisera mellan tre olika saker, objekt, ansikten och landmärken.
-En av de större problemen med projektet var att det tog väldigt lång tid att beräkna på en vanlig dator, runt en veckas tid.
+En av de större utmaningarna med projektet var att det tog väldigt lång tid att beräkna på en vanlig dator, runt en veckas tid.
 
-Det här projektet hade i som uppgift att försöka snabba upp beräkningstiden av forskarnas kod med hjälp av olika medel.
+Det här projektet hade som uppgift att försöka förbättra och snabba upp beräkningstiden av koden.
 Projektet översatte den kod som skulle förbättras från programmeringspråket MATLAB till Python.
 Projektet använde sig utav profilering, kluster och av ett accelereringsverktyg.
 Med hjälp av profilering kan man lokalisera delar av kod som körs långsamt och förbättra koden till att vara snabbare, ett optimeringsverktyg helt enkelt.
 Kluster är en samling av datorer som man kan använda för att kollektivt beräkna större problem med, för att öka beräkningshastigheten.
-Det här projektet använde sig utav ett ramverk kallat Ray, vilket möjliggjorde beräkningar av koden på ett kluster inom Ericsson.
+Det här projektet använde sig utav ett ramverk kallat Ray, vilket möjliggjorde beräkningar av koden på ett kluster ägt av Ericsson.
 Ett accellereringsverktyg kallat the Accelerator implementerades också, separat från Ray implementationen av koden.
 The Accelerator utnyttjar endast lokala processorer för att parallelisera ett problem gentemot att använda flera datorer.
 Den största fördelen med the Accelerator är att den kan hålla reda på vad som beräknats och inte och sparar alla resultat automatiskt.
 När the Accelerator håller reda på allt så kan det återanvända gamla resultat till nya beräkningar ifall gammal kod används.
 Återanvändningen av gamla resultat betyder att man undviker beräkningstiden det skulle ta att beräkna kod man redan har beräknat.
 
-Detta projekt förbättrade beräkningshastigheten till att vara över två hundra gånger snabbare än det var innan.
-Både Ray och the Accelerator såg en förbättring på över två hundra gånger snabbare, med dem bästa resultaten från the Accelerator på runt två hundra femtio gånger snabbare.
-Det skall dock nämnas att dem bästa resultaten från the Accelerator gjordes på en bra server processor, som har högre inköpskostnad en vad en klustertjänst i molnet skulle ha.
-En förbättring på två hundra gånger kan ha stora konsekvenser, om man kan se sådan förbättring i hastighet för BCI överlag.
-Man skulle potentiellt kunna se en i mer realtid tolkning av hjärnsignaler, vilket man kunde använda till att styra apparater eller elektronik med.
+Detta projekt förbättrade beräkningshastigheten till att vara över två hundra gånger snabbare än den var innan.
+Med både Ray och the Accelerator sågs en förbättring på över två hundra gånger snabbare, med de bästa resultaten från the Accelerator på runt två hundra femtio gånger snabbare.
+Det skall dock nämnas att de bästa resultaten från the Accelerator gjordes på en bra server processor.
+En bra server processor har en stor inköpskostnad medan en klustertjänst endast tar betalt för tiden man använder, vilket kan vara billigare på kort sikt.
+Det kan också vara billigare att köpa en serverprocessor i längden än en klustertjänst, om man använder datorkraften mycket.
+
+En förbättring på två hundra gånger kan ha stora konsekvenser, om man kan se en sådan förbättring i hastighet för BCI överlag.
+Man skulle potentiellt kunna se en tolkning av hjärnsignaler mer i realtid, vilket man kunde använda till att styra apparater eller elektronik med.
 
 Resultaten i det här projektet har också visat att NumPy, ett vanligt beräknings bibliotek i Python, har saktat ned koden med de standardinställningar det kommer med.
 NumPy gjorde kod långsammare genom att använda flera trådar i processorn, även i en flertrådad miljö där manuell parallelisering hade gjorts.
-Det visade sig att NumPy var långsammare för både den fler och en trådade implementationen, vilket antyder att NumPy kan sakta ned kod generellt, något många är omedvetna om.
-Efter att manuellt fixat de miljövariabler som NumPy kommer med, så såg koden en upp till tre gånger så snabb beräkningstid än innan.
+Det visade sig att NumPy var långsammare för både den fler och entrådade implementationen, vilket antyder att NumPy kan sakta ned kod generellt, något många är omedvetna om.
+Efter att manuellt fixat de miljövariabler som NumPy kommer med, så var koden mer än tre gånger så snabb än innan.
 
 \end{otherlanguage}
 
@@ -1160,9 +1163,9 @@ Anyone can develop and publish the Python code, while MATLAB is both excluded to
 \subsection{Profiling}
 
 The project has demonstrated the importance of using profiling to find problematic slow running code for improving runtime performance.
-After optimization and parallelizing the problem it was possible to decrease the execution time by 200 times using 40 VCPUs.
+After optimization and parallelizing the problem it was possible to decrease the execution time by two hundred times using forty VCPUs.
 However, the results indicate that the VCPUs on the cluster perform worse individually, compared to the CPU in the test PC used for the MATLAB code.
-In other words, if the original MATLAB code is executed on one of the VCPUs, the speedup compared to those results could potentially be greater than 200 times.
+In other words, if the original MATLAB code is executed on one of the VCPUs, the speedup compared to those results could potentially be greater than two hundred times.
 %The 200 time speedup does not account for the difference in performance for the given hardware, with the results indicating that the VCPUs perform worse individually compared to the test PC.
 
 \subsection{NumPy}
@@ -1180,9 +1183,9 @@ What is usually fastest in Python might be slower due to obscure small things in
 \subsection{Python vs. MATLAB}
 
 The project has demonstrated the validity of using Python for science projects and the possibility of translating most MATLAB code to Python.
-I do however not recommend translating MATLAB code, I would instead suggest to rewrite the program from scratch with the idea of how it is supposed to work.
-The project has highlighted that there are differences even if the vast majority of functions in MATLAB are supported in Python.
-Even if most MATLAB functions are supported in Python there are still and will always be libraries with differences, making it almost impossible to achieve identical results.
+However unless there is a large reason to translate a program to another language, it is recommended to instead rewrite the program from scratch.
+The project has highlighted that there are differences, even if the vast majority of functions in MATLAB are supported in Python.
+Nevertheless, there are still and will always be libraries with differences, making it almost impossible to achieve identical results.
 
 \subsection{Parallelization}
 
@@ -1238,7 +1241,7 @@ It is in the end a discussion the researchers at Lund will have to take themselv
 \section{Outlook}
 
 There are still things which could be improved.
-It is suspected at the moment that a big reason for the fifteen minute hard limit for the Ray implementation, might be due to the high scalability of the current code.
+It is thought that a big reason for the fifteen minute hard limit for the Ray implementation, might be due to the high scalability of the current code.
 The very smallest parallel code block in the Ray implementation is surprisingly fast to execute.
 When the Ray implementation have a growing number of cores and fast small functions, the speed of distributing tasks become increasingly important.
 It could be the distribution of small tasks is limiting Ray to utilize the hardware fully.
@@ -1266,7 +1269,7 @@ Since unnecessary features from the Accelerator could be left out from this gene
 
 The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all unnecessary loading from disk.
 Integrating the scripts and removing intermediate loading of files could speed up the computations.
-It would not change the final output data just integrating the scripts more and getting rid of all the intermediate loading of files.
+It would not change the final output data, just integrating the scripts more and getting rid of all the intermediate loading of files.
 Similiar to the Accelerator an optimization in the MATLAB code could be to create checkpoints which only executes changed code.
 The MATLAB code could be tested on octave to integrate it with the Python scripts and run it with Ray for a parallel execution.
 
