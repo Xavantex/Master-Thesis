@@ -227,7 +227,7 @@ Two major parallel implementations of the Python scripts were made.
 One parallel implementation was made using the Ray framework to compute in the cloud~\cite{ray:whatIsRay}.
 The other parallel implementation was made using the Accelerator, a framework to compute using local threads~\cite{exax:Accelerator}.
 After translation, the code was tested versus the original results and profiled for any key mistakes, for example functions which took unnecessarily long time to execute.
-After optimisation the single thread script was twelve times faster than the original MATLAB script.
+After optimization the single thread script was twelve times faster than the original MATLAB script.
 
 The final execution times were around \SI[parse-numbers=false]{12-15}{minutes}, compared to the benchmark of \SI{48}{hours} it is about 200 times faster.
 The benchmark of the original code used less iterations than the researchers used, decreasing the computational time from a week to \SI{48}{\hour}.
