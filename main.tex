@@ -263,8 +263,8 @@ När the Accelerator håller reda på allt så kan det återanvända gamla resul
 Detta projekt förbättrade beräkningshastigheten till att vara över två hundra gånger snabbare än den var innan.
 Med både Ray och the Accelerator sågs en förbättring på över två hundra gånger snabbare, med de bästa resultaten från the Accelerator på runt två hundra femtio gånger snabbare.
 Det skall dock nämnas att de bästa resultaten från the Accelerator gjordes på en bra server processor.
-En bra server processor har en stor inköpskostnad medan en klustertjänst endast tar betalt för tiden man använder, vilket kan vara billigare på kort sikt.
-Det kan också vara billigare att köpa en serverprocessor i längden än en klustertjänst, om man använder datorkraften mycket.
+En bra server processor är en stor investering medan en klustertjänst endast tar betalt för tiden man använder, vilket kan vara billigare på kort sikt.
+Om man däremot behöver använda datorkraften mycket kan det vara mer lönsamt i längden att använda en serverprocessor.
 
 En förbättring på två hundra gånger kan ha stora konsekvenser, om man kan se en sådan förbättring i hastighet för BCI överlag.
 Man skulle potentiellt kunna se en tolkning av hjärnsignaler mer i realtid, vilket man kunde använda till att styra apparater eller elektronik med.
@@ -275,6 +275,19 @@ Det visade sig att NumPy var långsammare för både den fler och entrådade imp
 Efter att manuellt fixat de miljövariabler som NumPy kommer med, så var koden mer än tre gånger så snabb än innan.
 
 \end{otherlanguage}
+
+\section*{Acknowledgement}
+
+I would like to thank the people at Ericsson and the department of Psychology at Lund Unversity, who gave me the opportunity to work on this master thesis.
+
+I want to thank my supervisor Anders, for always being available, helping and interested in my progress.
+
+I want to thank my subject reader Ayca, for guiding me through the formalities and making sure I am doing OK working from home during the pandemic.
+
+I want to thank my friend Simon who helped make this report possible, whom without I would certainly be bit more lost.
+
+I want to thank my parents for supporting me and pushing me forward during the project.
+
 
 \tableofcontents
 
@@ -1183,7 +1196,7 @@ What is usually fastest in Python might be slower due to obscure small things in
 \subsection{Python vs. MATLAB}
 
 The project has demonstrated the validity of using Python for science projects and the possibility of translating most MATLAB code to Python.
-However unless there is a large reason to translate a program to another language, it is recommended to instead rewrite the program from scratch.
+However unless there is a specific reason to translate a program to another language, it is recommended to instead rewrite the program from scratch.
 The project has highlighted that there are differences, even if the vast majority of functions in MATLAB are supported in Python.
 Nevertheless, there are still and will always be libraries with differences, making it almost impossible to achieve identical results.
 
@@ -1242,9 +1255,9 @@ It is in the end a discussion the researchers at Lund will have to take themselv
 
 There are still things which could be improved.
 It is thought that a big reason for the fifteen minute hard limit for the Ray implementation, might be due to the high scalability of the current code.
-The very smallest parallel code block in the Ray implementation is surprisingly fast to execute.
-When the Ray implementation have a growing number of cores and fast small functions, the speed of distributing tasks become increasingly important.
-It could be the distribution of small tasks is limiting Ray to utilize the hardware fully.
+The very smallest parallel functions in the Ray implementation are surprisingly fast to execute.
+When the Ray implementation have a growing number of cores and fast small functions, the speed of distributing functions become increasingly important.
+It could be that the distribution of the fast small functions is limiting Ray to utilize the hardware fully.
 
 A suggestion would be to try and divide the code into larger chunks which takes a longer time to execute.
 Larger chunks would eliminate some of the communication overhead and Ray would not need to schedule as many tasks.
@@ -1268,9 +1281,8 @@ There is the possibility of developing a custom or another general framework for
 Since unnecessary features from the Accelerator could be left out from this general framework, it could be faster than integrating Ray and the Accelerator.
 
 The next step in optimizing the MATLAB code would be to integrate the scripts and avoid all unnecessary loading from disk.
-Integrating the scripts and removing intermediate loading of files could speed up the computations.
-It would not change the final output data, just integrating the scripts more and getting rid of all the intermediate loading of files.
-Similiar to the Accelerator an optimization in the MATLAB code could be to create checkpoints which only executes changed code.
+Integrating the scripts and removing intermediate loading of files could speed up the computations and would not change the final output data.
+Similar to the Accelerator an optimization in the MATLAB code could be to create checkpoints which only executes changed code.
 The MATLAB code could be tested on octave to integrate it with the Python scripts and run it with Ray for a parallel execution.
 
 \bibliographystyle{vancouver}
